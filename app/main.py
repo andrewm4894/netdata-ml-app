@@ -1,10 +1,14 @@
 import os
 import logging
 
+import pandas as pd
+from netdata_pandas.data import get_data
 from fastapi import FastAPI
+import fastapi
+from starlette.templating import Jinja2Templates
+from starlette.requests import Request
 
-
-# create app
+templates = Jinja2Templates('templates')
 app = FastAPI()
 
 # set up log
@@ -16,6 +20,23 @@ else:
 log = logging.getLogger(__name__)
 
 
+@app.get("/liveness")
+async def liveness():
+    return "alive"
+
+
+@app.get("/readiness")
+async def readiness():
+    return "ready"
+
+
 @app.get("/")
-async def home():
-    return {"Hello": "World"}
+async def home(request: Request):
+    data = {'request': request}
+    return templates.TemplateResponse('home.html', data)
+
+
+@app.get("/dev")
+async def dev():
+    df = get_data('london.my-netdata.io', ['system.cpu','system.load'], after=-60, before=0)
+    return fastapi.responses.PlainTextResponse(df.to_string())

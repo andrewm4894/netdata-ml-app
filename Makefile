@@ -27,3 +27,7 @@ test:
 .PHONY: requirements
 requirements:
 	pipenv lock -r > requirements.txt
+
+.PHONY: rmi
+remove-images:
+	docker rmi $(APP)

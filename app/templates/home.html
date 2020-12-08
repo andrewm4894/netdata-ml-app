@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <br>
+    <div class="header">
+      <img src="/app/static/green_logotype.png" alt="logo" />
+      <h1>Netdata ML App (experimental)</h1>
+    </div>
+
+    <div class="vertical-menu">
+        <a href="#" class="active">Home</a>
+        <a href="#">Link 1</a>
+        <a href="#">Link 2</a>
+        <a href="#">Link 3</a>
+        <a href="#">Link 4</a>
+      </div>
+
+    <form action="results" id="inputs">
+        <label for="url">Netdata URL</label>
+        <input type="url" name="url" value="" required size="125">
+        <br><br>
+        <label for="config">Job Config:</label>
+        <br><br>
+        <textarea rows="12" cols="100" name="config" form="inputs">
+    {
+        "model": {
+            "type": "ks",
+            "params": {},
+            "n_lags": 0,
+            "model_level": "dim"
+        },
+        "return_type": "html",
+        "baseline_window_multiplier": 2,
+        "score_thold": 0.0
+    }
+        </textarea>
+        <br><br>
+        <input type="submit" value="Run" >
+    </form>
+
+{% endblock %}

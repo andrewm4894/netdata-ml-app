@@ -3,6 +3,7 @@
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
+import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 from netdata_pandas.data import get_data
@@ -11,23 +12,42 @@ from am4894plots.plots import plot_lines, plot_lines_grid
 from app import app
 
 layout = html.Div([
-    dcc.Link('Home', href='/apps'),
-    html.H3('Node Summary'),
-    dcc.Input(id='input-host', value='london.my-netdata.io', type='text', placeholder='host'),
-    dcc.Input(id='input-n', value=60, type='number', placeholder='n'),
-    html.Button('Refresh', id='btn-refresh', n_clicks=0),
-    dcc.Tabs(id='tabs', value='tab-grid', children=[
-        dcc.Tab(label='Grid', value='tab-grid'),
-        dcc.Tab(label='Lines', value='tab-lines'),
+    html.Div([
+        dbc.Button('Home', href='/apps'),
+        dbc.Button('Refresh', id='btn-refresh', n_clicks=0),
     ]),
-    dcc.Graph(id='fig')
+    html.H3('Node Summary'),
+    dbc.FormGroup(
+        [
+            dbc.Label("Host", html_for="input-host", width=1),
+            dbc.Col(dbc.Input(id='input-host', value='london.my-netdata.io', type='text', placeholder='host'), width=4),
+        ],
+        row=True
+    ),
+    dbc.FormGroup(
+        [
+            dbc.Label("n", html_for="input-n", width=1),
+            dbc.Col(dbc.Input(id='input-n', value=60, type='number', placeholder='n'), width=4),
+        ],
+        row=True
+    ),
+
+    dbc.Tabs(
+        [
+            dbc.Tab(label='Grid', tab_id='tab-grid'),
+            dbc.Tab(label='Lines', tab_id='tab-lines'),
+        ],
+        id='tabs',
+        active_tab='tab-grid'
+    ),
+    dbc.CardBody(dcc.Graph(id='fig'))
 ])
 
 
 @app.callback(
     Output('fig', 'figure'),
     Input('btn-refresh', 'n_clicks'),
-    Input('tabs', 'value'),
+    Input('tabs', 'active_tab'),
     State('input-host', 'value'),
     State('input-n', 'value'),
 )

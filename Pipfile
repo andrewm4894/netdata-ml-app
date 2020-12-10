@@ -12,6 +12,9 @@ fastapi = "==0.62.0"
 netdata-pandas = "==0.0.32"
 jinja2 = "==2.11.2"
 aiofiles = "==0.6.0"
+python-multipart = "==0.0.5"
+dash = "==1.18.1"
+dash-bootstrap-components = "==0.10.7"
 
 [requires]
 python_version = "3.7"

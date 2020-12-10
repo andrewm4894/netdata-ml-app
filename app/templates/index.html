@@ -1,0 +1,91 @@
+<html>
+<head>
+
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+    <div class="container">
+
+        <!--Heading-->
+        <h3>
+            Netdata ML App
+            <small class="text-muted">super experimental!</small>
+        </h3>
+
+        <!--Collapsible Panel-->
+        <div class="panel-group" id="accordion">
+            <div class="panel panel-default">
+                
+                <!--Node Summary-->
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#nodeSummary">
+                            Node Summary
+                        </a>
+                    </h4>
+                </div>
+                <div id="nodeSummary" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <form method="post" action="node-summary">
+                            <div class="form-group">
+                              <label for="host">Host</label>
+                              <input type="host" name="host" class="form-control" id="host" aria-describedby="hostHelp" placeholder="Enter host" required value="london.my-netdata.io">
+                              <small id="hostHelp" class="form-text text-muted">The host you want to use.</small>
+                            </div>
+                            <button type="submit" action="results" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!--Time Series Clustering-->
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#timeSeriesClustering">
+                            Time Series Clustering
+                        </a>
+                    </h4>
+                </div>
+                <div id="timeSeriesClustering" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <form>
+                            <div class="form-group">
+                              <label for="host">Host</label>
+                              <input type="host" class="form-control" id="host" aria-describedby="hostHelp" placeholder="Enter host">
+                              <small id="hostHelp" class="form-text text-muted">The host you want to use.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!--Alarms Affinity-->
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#alarmsAffinity">
+                            Alarms Affinity
+                        </a>
+                    </h4>
+                </div>
+                <div id="alarmsAffinity" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <form>
+                            <div class="form-group">
+                              <label for="host">Host</label>
+                              <input type="host" class="form-control" id="host" aria-describedby="hostHelp" placeholder="Enter host">
+                              <small id="hostHelp" class="form-text text-muted">The host you want to use.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+      </div>
+
+</body>
+</html>

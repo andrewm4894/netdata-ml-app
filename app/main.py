@@ -8,10 +8,11 @@ import fastapi
 from starlette.templating import Jinja2Templates
 from starlette.requests import Request
 
-templates = Jinja2Templates('templates')
-app = FastAPI()
+from fastapi import FastAPI, Request, Form
+from fastapi.templating import Jinja2Templates
+from fastapi.middleware.wsgi import WSGIMiddleware
+from node_summary_dash import make_dash_app
 
-# set up log
 log_level = os.getenv("LOG_LEVEL", "INFO")
 if log_level == 'DEBUG':
     logging.basicConfig(level = logging.DEBUG)
@@ -20,23 +21,40 @@ else:
 log = logging.getLogger(__name__)
 
 
+app = FastAPI()
+templates = Jinja2Templates('templates')
+dash_app = make_dash_app()
+app.mount("/dash", WSGIMiddleware(dash_app.server))
+
+
 @app.get("/liveness")
-async def liveness():
+def liveness():
     return "alive"
 
 
 @app.get("/readiness")
-async def readiness():
+def readiness():
     return "ready"
 
 
 @app.get("/")
-async def home(request: Request):
+def home(request: Request):
     data = {'request': request}
-    return templates.TemplateResponse('home.html', data)
+    return templates.TemplateResponse('index.html', data)
+
+
+@app.post("/node-summary")
+def node_summary(request: Request, host: str = Form(...)):
+    df = get_data(host, ['system.cpu','system.load'], after=-60, before=0)
+    context = {
+        'request': request, 
+        'host': host,
+        'df_shape': df.shape
+        }
+    return templates.TemplateResponse('node-summary.html', context)
 
 
 @app.get("/dev")
-async def dev():
+def dev():
     df = get_data('london.my-netdata.io', ['system.cpu','system.load'], after=-60, before=0)
     return fastapi.responses.PlainTextResponse(df.to_string())

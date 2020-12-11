@@ -5,7 +5,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import app_node_summary, app2, app_home
+from apps import app_clustering, app_alarms_affinity, app_home
 
 
 app.layout = html.Div([
@@ -17,11 +17,11 @@ app.layout = html.Div([
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
 def display_page(pathname):
-    if pathname == '/apps/app_node_summary':
-        return app_node_summary.layout
-    elif pathname == '/apps/app2':
-        return app2.layout
-    elif pathname == '/apps':
+    if pathname == '/clustering':
+        return app_clustering.layout
+    elif pathname == '/alarms-affinity':
+        return app_alarms_affinity.layout
+    elif pathname == '/':
         return app_home.layout
     else:
         return '404'

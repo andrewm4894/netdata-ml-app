@@ -2,11 +2,12 @@
 
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import dash_core_components as dcc
+import dash_html_components as dhc
 from app import app
+from .utils.logo import logo
+from .utils.defaults import DEFAULT_STYLE
 
-DEFAULT_STYLE = {"margin": "2px", "padding": "2px"}
-
-logo = dbc.Row(dbc.Col(html.Img(src=app.get_asset_url('netdata-logo.png')), style=DEFAULT_STYLE), style=DEFAULT_STYLE)
 
 main_menu = dbc.Col(dbc.ButtonGroup(
     [
@@ -18,7 +19,6 @@ main_menu = dbc.Col(dbc.ButtonGroup(
 layout = html.Div(
     [
         logo,
-        html.Br(),
         main_menu,
     ], style=DEFAULT_STYLE
 )

@@ -8,6 +8,7 @@ import pandas as pd
 import plotly.express as px
 from netdata_pandas.data import get_data
 from am4894plots.plots import plot_lines, plot_lines_grid
+from netdata_ts_clustering.core import Clusterer
 
 from app import app
 from .utils.logo import logo
@@ -93,11 +94,18 @@ layout = html.Div(
     State('input-num-clusters', 'value'),
 )
 def display_value(n_clicks, tab, host, after, before, k):
-    df = get_data([host], ['system.cpu', 'system.load', 'system.net'], after=int(after), before=int(after))
+    #df = get_data([host], ['system.cpu', 'system.load', 'system.net'], after=int(after), before=int(after))
+    model = Clusterer(['london.my-netdata.io'], charts=['system.cpu', 'system.load', 'system.net'], after=-900, before=0, n_clusters=4)
+    model.run_all()
     if tab == 'tab-centers':
-        fig = plot_lines_grid(df, return_p=True, show_p=False, h=1200)
+        #fig = plot_lines_grid(df, return_p=True, show_p=False, h=1200)
+        fig = model.fig_centers
     else:
-        fig = plot_lines(df, return_p=True, show_p=False, h=1200)
+        # plot clusters
+        for cluster in model.df_cluster_meta.index:
+            title = f"Cluster {cluster} (n={model.cluster_len_dict[cluster]}, score = {model.cluster_quality_dict[cluster]})"
+            plot_cols = model.cluster_metrics_dict[cluster]
+            fig = plot_lines(model.df, cols=plot_cols, title=title, return_p=True, show_p=False)
 
     return fig
 

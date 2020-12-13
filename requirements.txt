@@ -5,3 +5,4 @@ dash-bootstrap-components==0.10.7
 numpy==1.19.3
 netdata-pandas==0.0.32
 am4894plots==0.2.0
+netdata-ts-clustering==0.0.3

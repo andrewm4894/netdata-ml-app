@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
+import numpy as np
 import plotly.express as px
 from netdata_pandas.data import get_data, get_chart_list
 from am4894plots.plots import plot_lines, plot_lines_grid
@@ -50,7 +52,7 @@ inputs_before = dbc.FormGroup(
 inputs_num_clusters = dbc.FormGroup(
     [
         dbc.Label('k', id='label-num-clusters', html_for='input-num-clusters', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='input-num-clusters', value=3, type='number', placeholder=3),
+        dbc.Input(id='input-num-clusters', value=20, type='number', placeholder=20),
         dbc.Tooltip('The number of clusters to form.', target='label-num-clusters')
     ]
 )
@@ -94,22 +96,22 @@ layout = html.Div(
 )
 def get_plots(n_clicks, tab, host, after, before, k):
     ctx = dash.callback_context
-    print(locals())
-    print(globals())
-    global states
-    global state_change
-    if 'states' not in globals():
-        states = ctx.states
-    if 'state_change' not in globals():
-        state_change = 0
-    for s in ctx.states:
-        if ctx.states[s] != states[s]:
-            state_change += 1
-    if state_change > 0 or 'model' not in globals():
-        states = ctx.states
-        charts_available = get_chart_list(host)
-        global model
-        model = Clusterer([host], charts=charts_available, after=after, before=before, n_clusters=k)
+
+    global states_previous
+    global states_current
+    global model
+    states_current = ctx.states
+
+    if 'states_previous' in globals():
+        if set(states_previous.values()) != set(states_current.values()):
+            # charts = np.random.choice(get_chart_list(host), 20, replace=False).tolist()
+            charts = get_chart_list(host)
+            model = Clusterer([host], charts=charts, after=after, before=before, n_clusters=k)
+            model.run_all()
+    else:
+        #charts = np.random.choice(get_chart_list(host), 20, replace=False).tolist()
+        charts = get_chart_list(host)
+        model = Clusterer([host], charts=charts, after=after, before=before, n_clusters=k)
         model.run_all()
 
     figs = []
@@ -142,7 +144,7 @@ def get_plots(n_clicks, tab, host, after, before, k):
             )
             figs.append(html.Div(dcc.Graph(id=f'fig-{cluster}', figure=fig_cluster)))
 
-    states_previous = states
+    states_previous = states_current
 
     return figs
 

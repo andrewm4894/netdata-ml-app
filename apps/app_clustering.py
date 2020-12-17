@@ -69,8 +69,8 @@ inputs = dbc.Row(
 
 tabs = dbc.Tabs(
     [
-        dbc.Tab(label='Cluster Centers', tab_id='tab-centers'),
-        dbc.Tab(label='Cluster Details', tab_id='tab-details'),
+        dbc.Tab(label='Cluster Centers', id='id-tab-centers', tab_id='tab-centers'),
+        dbc.Tab(label='Cluster Details', id='id-tab-details', tab_id='tab-details'),
     ], id='tabs', active_tab='tab-centers', style={'margin': '12px', 'padding': '2px'}
 )
 
@@ -100,46 +100,40 @@ def get_plots(n_clicks, tab, host, after, before, k):
     global states_previous
     global states_current
     global model
+    global valid_clusters
     states_current = ctx.states
 
-    if 'states_previous' in globals():
-        if set(states_previous.values()) != set(states_current.values()):
-            # charts = np.random.choice(get_chart_list(host), 20, replace=False).tolist()
-            charts = get_chart_list(host)
-            model = Clusterer([host], charts=charts, after=after, before=before, n_clusters=k)
-            model.run_all()
-    else:
-        #charts = np.random.choice(get_chart_list(host), 20, replace=False).tolist()
+    def run_model(host, after, before, k):
         charts = get_chart_list(host)
         model = Clusterer([host], charts=charts, after=after, before=before, n_clusters=k)
         model.run_all()
+        valid_clusters = model.df_cluster_meta[model.df_cluster_meta['valid'] == 1].index
+        return model, valid_clusters
+
+    if 'states_previous' in globals():
+        if set(states_previous.values()) != set(states_current.values()):
+            model, valid_clusters = run_model(host, after, before, k)
+    else:
+        model, valid_clusters = run_model(host, after, before, k)
 
     figs = []
     if tab == 'tab-centers':
         # plot centers
-        titles = [
-            f'{x[0]} - n={x[2]}, qs={x[1]}'
-            for x in list(
-                zip(
-                    list(model.df_cluster_meta.index),
-                    list(model.df_cluster_meta.quality_score),
-                    list(model.df_cluster_meta.n)
-                )
-            )
-        ]
+        titles = [f'{int(x[0])} - n={int(x[1])}, qs={x[2]}' for x in
+                  model.df_cluster_meta.loc[valid_clusters].reset_index().values.tolist()]
         fig_centers = plot_lines_grid(
-            model.df_cluster_centers[list(model.df_cluster_meta.index)],
+            df=model.df_cluster_centers[valid_clusters],
             subplot_titles=titles, return_p=True, h_each=300,
             legend=False, yaxes_visible=False, xaxes_visible=False, show_p=False
         )
         figs.append(html.Div(dcc.Graph(id='fig-centers', figure=fig_centers)))
     else:
         # plot clusters
-        for cluster in model.df_cluster_meta.index:
+        for cluster in valid_clusters:
             title = f"Cluster {cluster} (n={model.cluster_len_dict[cluster]}, score={model.cluster_quality_dict[cluster]})"
             plot_cols = model.cluster_metrics_dict[cluster]
             fig_cluster = plot_lines(
-                model.df, cols=plot_cols, title=title, return_p=True, show_p=False,
+                df=model.df, cols=plot_cols, title=title, return_p=True, show_p=False,
                 slider=False
             )
             figs.append(html.Div(dcc.Graph(id=f'fig-{cluster}', figure=fig_cluster)))

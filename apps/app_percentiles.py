@@ -101,8 +101,8 @@ layout = html.Div(
     State('input-ref', 'value'),
 )
 def display_value(n_clicks, tab, host, charts_regex, after, before, ref):
-    if ref == '4h':
-        ref_timedelta = timedelta(hours=4)
+    if 'h' in ref:
+        ref_timedelta = timedelta(hours=int(ref.replace('h', '')))
     else:
         ref_timedelta = timedelta(hours=1)
 

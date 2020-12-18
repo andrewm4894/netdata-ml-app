@@ -13,7 +13,8 @@ main_menu = dbc.Col(dbc.ButtonGroup(
     [
         dbc.Button('Time Series Clustering', href='/clustering'),
         dbc.Button('Metrics Heatmap', href='/heatmap'),
-        dbc.Button('Metric Percentiles', href='/percentiles')
+        dbc.Button('Metric Percentiles', href='/percentiles'),
+        dbc.Button('Alarms Affinity', href='/alarms-affinity')
     ], vertical=True
 ))
 

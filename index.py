@@ -5,7 +5,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import app_home, app_clustering, app_heatmap, app_percentiles
+from apps import app_home, app_clustering, app_heatmap, app_percentiles, app_alarms_affinity
 
 
 app.layout = html.Div([
@@ -23,6 +23,8 @@ def display_page(pathname):
         return app_heatmap.layout
     elif pathname == '/percentiles':
         return app_percentiles.layout
+    elif pathname == '/alarms-affinity':
+        return app_alarms_affinity.layout
     elif pathname == '/':
         return app_home.layout
     else:

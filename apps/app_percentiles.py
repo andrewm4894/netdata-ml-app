@@ -176,7 +176,7 @@ def display_value(n_clicks, tab, host, charts_regex, after, before, ref):
             # x
             fig.add_trace(
                 go.Scatter(
-                    x=df.index, y=raw_data, mode='lines', name='x',
+                    x=df.index, y=raw_data, mode='lines', name=col,
                     line=dict(width=1)
                 )
             )
@@ -224,7 +224,8 @@ def display_value(n_clicks, tab, host, charts_regex, after, before, ref):
             )
             fig.update_layout(
                 template='simple_white',
-                title=f'{col} - {crossover_rate}% crossover (ref: -{ref_timedelta})'
+                title=f'{col} - {crossover_rate}% crossover (ref: -{ref_timedelta})',
+                showlegend=False
             )
             figs.append(html.Div(dcc.Graph(id=f'fig-{n}', figure=fig)))
 

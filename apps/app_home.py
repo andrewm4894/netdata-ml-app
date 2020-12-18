@@ -12,7 +12,8 @@ from .utils.defaults import DEFAULT_STYLE
 main_menu = dbc.Col(dbc.ButtonGroup(
     [
         dbc.Button('Time Series Clustering', href='/clustering'),
-        dbc.Button('Metrics Heatmap', href='/heatmap')
+        dbc.Button('Metrics Heatmap', href='/heatmap'),
+        dbc.Button('Metric Percentiles', href='/percentiles')
     ], vertical=True
 ))
 

@@ -6,12 +6,13 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from netdata_pandas.data import get_data
 from sklearn.cluster import AgglomerativeClustering
 
 from app import app
 from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE
+from .utils.defaults import DEFAULT_STYLE, empty_fig
 
 
 main_menu = dbc.Col(dbc.ButtonGroup(
@@ -122,18 +123,23 @@ def display_value(n_clicks, tab, host, charts_regex, after, before, freq):
     ).sort_values('cluster')['metric'].values.tolist()
     # re-order cols
     df = df[cols_sorted]
-    if tab == 'tab-heatmap':
-        fig = px.imshow(df.transpose(), color_continuous_scale='Greens')
-        fig.update_layout(
-            autosize=False,
-            width=1200,
-            height=1200)
+    if n_clicks > 0:
+        if tab == 'tab-heatmap':
+            fig = px.imshow(df.transpose(), color_continuous_scale='Greens')
+            fig.update_layout(
+                autosize=False,
+                width=1200,
+                height=1200)
+        else:
+            fig = px.imshow(df.transpose())
+            fig.update_layout(
+                autosize=False,
+                width=1000,
+                height=1200)
     else:
-        fig = px.imshow(df.transpose())
-        fig.update_layout(
-            autosize=False,
-            width=1000,
-            height=1200)
+        fig = empty_fig
+        #fig = go.Figure(empty_fig)
+        #fig.update_layout(height=500, width=1000)
 
     return fig
 

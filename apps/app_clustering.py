@@ -4,7 +4,7 @@ import logging
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import dash_bootstrap_components as dbc
 import pandas as pd
 import numpy as np
@@ -92,7 +92,7 @@ layout = html.Div(
     State('input-host', 'value'),
     State('input-after', 'value'),
     State('input-before', 'value'),
-    State('input-num-clusters', 'value'),
+    State('input-num-clusters', 'value')
 )
 def get_plots(n_clicks, tab, host, after, before, k):
     ctx = dash.callback_context

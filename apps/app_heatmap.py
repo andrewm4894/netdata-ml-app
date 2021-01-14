@@ -103,6 +103,8 @@ layout = html.Div(
     State('input-freq', 'value'),
 )
 def display_value(n_clicks, tab, host, charts_regex, after, before, freq):
+
+    # get data
     df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
     # lets resample to 5 sec frequency
     df = df.resample(freq).mean()
@@ -113,9 +115,7 @@ def display_value(n_clicks, tab, host, charts_regex, after, before, freq):
     # lets do some clustering to sort similar cols
     clustering = AgglomerativeClustering(
         n_clusters=int(round(len(df.columns) * 0.2, 0))
-    ).fit(
-        df.fillna(0).transpose().values
-    )
+    ).fit(df.fillna(0).transpose().values)
     # get order of cols from the cluster labels
     cols_sorted = pd.DataFrame(
         zip(df.columns, clustering.labels_),
@@ -124,22 +124,13 @@ def display_value(n_clicks, tab, host, charts_regex, after, before, freq):
     # re-order cols
     df = df[cols_sorted]
     if n_clicks > 0:
-        if tab == 'tab-heatmap':
-            fig = px.imshow(df.transpose(), color_continuous_scale='Greens')
-            fig.update_layout(
-                autosize=False,
-                width=1200,
-                height=1200)
-        else:
-            fig = px.imshow(df.transpose())
-            fig.update_layout(
-                autosize=False,
-                width=1000,
-                height=1200)
+        fig = px.imshow(df.transpose(), color_continuous_scale='Greens')
+        fig.update_layout(
+            autosize=False,
+            width=1200,
+            height=1200)
     else:
         fig = empty_fig
-        #fig = go.Figure(empty_fig)
-        #fig.update_layout(height=500, width=1000)
 
     return fig
 

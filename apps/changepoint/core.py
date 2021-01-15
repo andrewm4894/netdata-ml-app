@@ -34,21 +34,26 @@ def get_changepoints(df, n_samples, sample_len):
             # run some samples
             for _ in range(n_samples):
 
-                sample_start_pre = np.random.choice(range(len(x_pre_breakpoints) - sample_len))
-                x_sample_pre = x_pre_breakpoints[sample_start_pre:sample_start_pre + sample_len]
+                try:
+                    sample_start_pre = np.random.choice(range(len(x_pre_breakpoints) - sample_len))
+                    x_sample_pre = x_pre_breakpoints[sample_start_pre:sample_start_pre + sample_len]
 
-                sample_start_post = np.random.choice(range(len(x_post_breakpoints) - sample_len))
-                x_sample_post = x_post_breakpoints[sample_start_post:sample_start_post + sample_len]
+                    sample_start_post = np.random.choice(range(len(x_post_breakpoints) - sample_len))
+                    x_sample_post = x_post_breakpoints[sample_start_post:sample_start_post + sample_len]
 
-                _, p = ks_2samp(x_sample_post, x_sample_pre)
-                _, t = ttest_ind(x_sample_post, x_sample_pre)
+                    _, p = ks_2samp(x_sample_post, x_sample_pre)
+                    _, t = ttest_ind(x_sample_post, x_sample_pre)
 
-                metrics.append(round(p, 4))
-                metrics.append(round(t, 4))
+                    metrics.append(round(p, 4))
+                    metrics.append(round(t, 4))
 
-            quality_score = round(np.mean(metrics), 4)
+                except:
+                    pass
 
-            results.append([col, quality_score, changepoint_t, abs_mean_pct_diff])
+            if len(metrics) >= 1:
+
+                quality_score = round(np.mean(metrics), 4)
+                results.append([col, quality_score, changepoint_t, abs_mean_pct_diff])
 
     df_results = pd.DataFrame(results, columns=['metric', 'quality_score', 'changepoint', 'abs_mean_pct_diff'])
     df_results['quality_rank'] = df_results['quality_score'].rank(ascending=True, method='first')

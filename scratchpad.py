@@ -9,7 +9,8 @@ from am4894plots.plots import plot_lines
 # inputs
 hosts = ['london.my-netdata.io']
 #charts_regex = '.*'
-charts_regex = 'system.*'
+#charts_regex = '.*'
+charts_regex = '^(?!.*uptime).*$'
 before = 0
 after = -60*15
 smooth_n = 5
@@ -20,6 +21,7 @@ sample_len = 50
 
 # get the data
 df = get_data(hosts=hosts, charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
+#df = df[[col for col in df.columns if 'uptime' not in col]]
 print(df.shape)
 df.head()
 
@@ -39,9 +41,15 @@ df_norm = df_norm.dropna(how='all', axis=0)
 # get changepoints
 df_results = get_changepoints(df_norm, n_samples, sample_len)
 
-##%%
+#%%
 
-for i, row in df_results.iterrows():
+#%%
+
+#%%
+
+#%%
+
+for i, row in df_results.head(20).iterrows():
 
     metric = row['metric']
     quality_score = row['quality_score']

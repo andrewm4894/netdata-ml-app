@@ -22,16 +22,16 @@ cp_main_menu = dbc.Col(dbc.ButtonGroup(
 ))
 cp_inputs_host = dbc.FormGroup(
     [
-        dbc.Label('Host', id='cp-label-host', html_for='cp-input-host', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Label('host', id='cp-label-host', html_for='cp-input-host', style={'margin': '4px', 'padding': '0px'}),
         dbc.Input(id='cp-input-host', value='london.my-netdata.io', type='text', placeholder='host'),
         dbc.Tooltip('Host you would like to pull data from.', target='cp-label-host')
     ]
 )
 cp_inputs_charts_regex = dbc.FormGroup(
     [
-        dbc.Label('Charts Regex', id='cp-label-charts-regex', html_for='cp-input-charts-regex', style={'margin': '4px', 'padding': '0px'}),
-        #dbc.Input(id='cp-input-charts-regex', value='^(?!.*uptime).*$', type='text', placeholder='system.*'),
-        dbc.Input(id='cp-input-charts-regex', value='system.*', type='text', placeholder='system.*'),
+        dbc.Label('charts regex', id='cp-label-charts-regex', html_for='cp-input-charts-regex', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='cp-input-charts-regex', value='^(?!.*uptime).*$', type='text', placeholder='system.*'),
+        #dbc.Input(id='cp-input-charts-regex', value='system.*', type='text', placeholder='system.*'),
         dbc.Tooltip('Regex for charts to pull.', target='cp-label-charts-regex')
     ]
 )
@@ -83,7 +83,7 @@ layout = html.Div(
     State('cp-input-after', 'value'),
     State('cp-input-before', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, smooth_n=5, n_samples=25, sample_len=50, n_results=20):
+def run(n_clicks, tab, host, charts_regex, after, before, smooth_n=5, n_samples=50, sample_len=50, n_results=50):
     figs = []
     if n_clicks > 0:
         df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
@@ -93,19 +93,16 @@ def run(n_clicks, tab, host, charts_regex, after, before, smooth_n=5, n_samples=
         df_norm = df_norm.dropna(how='all', axis=1)
         df_norm = df_norm.dropna(how='all', axis=0)
         df_results = get_changepoints(df_norm, n_samples, sample_len)
-        for i, row in df_results.head(n_results).iterrows():
+        for i, row in df_results.sort_values('rank').head(n_results).iterrows():
             metric = row['metric']
-            quality_score = row['quality_score']
-            quality_rank = str(int(row['quality_rank']))
-            changepoint = row['changepoint']
-            abs_mean_pct_diff = row['abs_mean_pct_diff']
-            title = f'{metric} - rank={quality_rank}, qs={quality_score}'
-            if quality_score <= 0.1 and abs_mean_pct_diff >= 0.3:
-                fig_changepoint = plot_lines(
-                    df, [metric], title=title, return_p=True, show_p=False,
-                    shade_regions=[(changepoint, df.index.max(), 'grey')], slider=False
-                )
-                figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=fig_changepoint)))
+            quality_rank = str(int(row['rank']))
+            changepoint = row['cp']
+            fig_changepoint = plot_lines(
+                df, [metric], title=f'{quality_rank} - {metric}', return_p=True,
+                show_p=False, shade_regions=[(changepoint, df.index.max(), 'grey')],
+                slider=False, h=300,
+            )
+            figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=fig_changepoint)))
     else:
         figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=empty_fig)))
 

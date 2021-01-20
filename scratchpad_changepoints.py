@@ -10,8 +10,8 @@ import time
 # inputs
 hosts = ['london.my-netdata.io']
 #charts_regex = '.*'
-#charts_regex = 'system.*'
-charts_regex = '^(?!.*uptime).*$'
+charts_regex = 'system.*'
+#charts_regex = '^(?!.*uptime).*$'
 before = 0
 after = -60*15
 smooth_n = 5
@@ -58,11 +58,19 @@ for i, row in df_results.sort_values('rank').head(50).iterrows():
     qs = row['qs']
     rank = row['rank']
     cp = row['cp']
-    title = f'{metric} - rank={rank}, qs={qs}'
+    diff = row['diff']
+    title = f'{metric} - rank={rank}, qs={qs}, diff={diff}'
     plot_lines(df, [metric], title=title, shade_regions=[(cp, df.index.max(), 'grey')])
 
 #%%
 
 #%%
+
+opts = 'x=1,a=2'
+opts = opts.split(',')
+opts = [opt.split('=') for opt in opts]
+opts = {opt[0]: opt[1] for opt in opts}
+
+#print({o[0]: o[1] for o in opt.split('=') for opt in opts.split(',')})
 
 #%%

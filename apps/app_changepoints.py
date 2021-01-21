@@ -5,13 +5,13 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from netdata_pandas.data import get_data
-from am4894plots.plots import plot_lines
 
 from app import app
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, empty_fig
 from .utils.utils import process_opts
 from .changepoint.core import get_changepoints
+from .plots.lines import plot_lines
 
 DEFAULT_CP_OPTS = 'window=100,diff_min=0.2,smooth_n=5,n_samples=100,sample_len=50,n_results=50'
 

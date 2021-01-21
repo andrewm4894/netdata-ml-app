@@ -4,7 +4,6 @@ dash==1.18.1
 dash-bootstrap-components==0.10.7
 numpy==1.19.3
 netdata-pandas==0.0.33
-am4894plots==0.2.0
 netdata-ts-clustering==0.0.9
 scikit-learn==0.23.2
 mlxtend==0.18.0

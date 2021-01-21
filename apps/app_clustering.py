@@ -6,13 +6,13 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
-from am4894plots.plots import plot_lines, plot_lines_grid
 
 from app import app
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, empty_fig, make_empty_fig
 from .utils.utils import process_opts
 from .clustering.core import Clusterer
+from .plots.lines import plot_lines, plot_lines_grid
 
 DEFAULT_CL_OPTS = 'k=20'
 

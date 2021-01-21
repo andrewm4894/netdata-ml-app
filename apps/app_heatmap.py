@@ -15,7 +15,7 @@ from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, empty_fig
 from .utils.utils import process_opts
 
-DEFAULT_HM_OPTS = 'freq=10s,w=1200'
+DEFAULT_HM_OPTS = 'freq=30s,w=1200'
 
 hm_main_menu = dbc.Col(dbc.ButtonGroup(
     [

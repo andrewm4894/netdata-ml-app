@@ -31,7 +31,7 @@ cp_inputs_host = dbc.FormGroup(
 cp_inputs_charts_regex = dbc.FormGroup(
     [
         dbc.Label('charts regex', id='cp-label-charts-regex', html_for='cp-input-charts-regex', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='cp-input-charts-regex', value='system.*|apps.*|users.*|groups.*', type='text', placeholder='system.*'),
+        dbc.Input(id='cp-input-charts-regex', value='system.*|apps.*|users.*|groups.*', type='text', placeholder='system.*|apps.*|users.*|groups.*'),
         dbc.Tooltip('Regex for charts to pull.', target='cp-label-charts-regex')
     ]
 )

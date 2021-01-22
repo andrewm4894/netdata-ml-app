@@ -15,12 +15,14 @@ button_heatmap = dbc.Button(dcc.Markdown('**Clustered Heatmap** - We all love he
 button_percentiles = dbc.Button(dcc.Markdown('**Metric Percentiles** - Add percentile lines to charts ([docs](https://www.netdata.cloud/))'), href='/percentiles', outline=button_outline, style=button_style)
 button_alarms_affinity = dbc.Button(dcc.Markdown('**Alarms Affinity** - Explore which alarms co-occur ([docs](https://www.netdata.cloud/))'), href='/alarms-affinity', outline=button_outline, style=button_style)
 button_changepoints = dbc.Button(dcc.Markdown('**Changepoint Detection** - Detect "shifts" in metrics ([docs](https://www.netdata.cloud/))'), href='/changepoints', outline=button_outline, style=button_style)
+button_metrics_explorer = dbc.Button(dcc.Markdown('**Metrics Explorer** - Explore some metrics ([docs](https://www.netdata.cloud/))'), href='/metrics-explorer', outline=button_outline, style=button_style)
 button_div_style = dict(marginLeft='15px')
 
 # make layout
 layout = html.Div(
     [
         logo,
+        html.Div(button_metrics_explorer, style=button_div_style),
         html.Div(button_changepoints, style=button_div_style),
         html.Div(button_clustering, style=button_div_style),
         html.Div(button_heatmap, style=button_div_style),

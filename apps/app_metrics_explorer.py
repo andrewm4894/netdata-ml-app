@@ -11,9 +11,11 @@ from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, empty_fig
 from .utils.utils import process_opts
 from .plots.lines import plot_lines, plot_lines_grid
+from .plots.scatter import plot_scatters
 from .data.core import normalize_df, smooth_df
 
 DEFAULT_ME_OPTS = 'smooth_n=5'
+DEFAULT_ME_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
 
 me_main_menu = dbc.Col(dbc.ButtonGroup(
     [
@@ -31,7 +33,7 @@ me_inputs_host = dbc.FormGroup(
 me_inputs_metrics = dbc.FormGroup(
     [
         dbc.Label('metrics', id='me-label-metrics', html_for='me-input-metrics', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-metrics', value='system.cpu|user,system.cpu|system,system.ram|free,system.net|sent', type='text', placeholder='system.cpu|user,system.cpu|system,system.ram|free,system.net|sent'),
+        dbc.Input(id='me-input-metrics', value=DEFAULT_ME_METRICS, type='text', placeholder=DEFAULT_ME_METRICS),
         dbc.Tooltip('Metrics to explore.', target='me-label-metrics')
     ]
 )
@@ -67,7 +69,8 @@ me_inputs = dbc.Row(
 )
 me_tabs = dbc.Tabs(
     [
-        dbc.Tab(label='Time Series Plots', tab_id='me-tab-ts-plots'),
+        dbc.Tab(label='Lines', tab_id='me-tab-ts-plots'),
+        dbc.Tab(label='Scatters', tab_id='me-tab-scatter-plots'),
     ], id='me-tabs', active_tab='me-tab-ts-plots', style={'margin': '12px', 'padding': '2px'}
 )
 layout = html.Div(
@@ -91,12 +94,18 @@ layout = html.Div(
     State('me-input-before', 'value'),
     State('me-input-opts', 'value'),
 )
-def cp_run(n_clicks, tab, host, metrics, after, before, opts='', smooth_n='0'):
+def cp_run(
+        n_clicks, tab, host, metrics, after, before, opts='',
+        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False'):
 
     figs = []
 
     opts = process_opts(opts)
     smooth_n = int(opts.get('smooth_n', smooth_n))
+    n_cols = int(opts.get('n_cols', n_cols))
+    h = int(opts.get('h', h))
+    w = int(opts.get('w', w))
+    diff = True if opts.get('diff', diff).lower() == 'true' else False
 
     if n_clicks == 0:
 
@@ -112,19 +121,29 @@ def cp_run(n_clicks, tab, host, metrics, after, before, opts='', smooth_n='0'):
         if smooth_n >= 1:
             df = smooth_df(df, smooth_n)
 
+        if diff:
+            df = df.diff()
+
         if tab == 'me-tab-ts-plots':
 
             fig = plot_lines(
-                normalize_df(df), title=f'Normalized Time Series Plot', return_p=True,
-                show_p=False, h=600, lw=1
+                normalize_df(df), h=600, lw=1, visible_legendonly=False, hide_y_axis=True
             )
             figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot', figure=fig)))
 
             fig = plot_lines_grid(
-                df, title=f'Sparkline Plots', return_p=True, show_p=False,
-                xaxes_visible=False, legend=False, yaxes_visible=False
+                df, h=75*len(df.columns), xaxes_visible=False, legend=False, yaxes_visible=False
             )
             figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot-grid', figure=fig)))
+
+        elif tab == 'me-tab-scatter-plots':
+
+            fig = plot_scatters(
+                df, return_p=True, show_p=False, n_cols=n_cols,
+                #h=int((h/n_cols)*len(df.columns)),
+                w=w, h=400*len(df.columns)
+            )
+            figs.append(html.Div(dcc.Graph(id='me-fig-scatter-plot', figure=fig)))
 
     return figs
 

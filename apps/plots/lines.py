@@ -14,13 +14,12 @@ def normalize_col(col, normalize_method: str = 'minmax'):
 
 
 def plot_lines(df: pd.DataFrame, cols: list = None, cols_like: list = None, x: str = None, title: str = None,
-               slider: bool = True, out_path: str = None, show_p: bool = True, return_p: bool = False, h: int = None,
-               w: int = None, theme: str = 'simple_white', lw: int = 1, renderer: str = 'browser',
+               slider: bool = True, h: int = None, w: int = None, theme: str = 'simple_white', lw: int = 1,
                stacked: bool = False, filltozero: bool = False, shade_regions: list = None,
                shade_color: str = 'Yellow', shade_opacity: float = 0.2, shade_line_width: int = 0,
                marker_list: list = None, marker_mode: str = "markers", marker_position: str = "bottom center",
                marker_color: str = 'Red', marker_size: int = 5, marker_symbol: str = 'circle-open',
-               normalize_method: str = None):
+               normalize_method: str = None, visible_legendonly: bool = False, hide_y_axis: bool = False):
     """Plot lines with plotly"""
 
     # set stackedgroup if stacked flag set
@@ -49,7 +48,7 @@ def plot_lines(df: pd.DataFrame, cols: list = None, cols_like: list = None, x: s
 
     # define x axis if needed
     if not x:
-        # if looks like int6e then convert to datetime
+        # if looks like int64 then convert to datetime
         if str(df.index.dtype) == 'int64':
             x = pd.to_datetime(df.index, unit='s')
         else:
@@ -60,10 +59,11 @@ def plot_lines(df: pd.DataFrame, cols: list = None, cols_like: list = None, x: s
     for i, col in enumerate(cols):
         p.add_trace(
             go.Scatter(
-                x=x, y=df[col], name=col, line=dict(width=lw), fill=fill, stackgroup=stackgroup,
-                hoverlabel=dict(namelength=-1)
+                x=x, y=df[col], name=col, line=dict(width=lw), fill=fill,
+                stackgroup=stackgroup, hoverlabel=dict(namelength=-1)
             )
         )
+
     if title:
         p.update_layout(title_text=title)
     if slider:
@@ -73,7 +73,6 @@ def plot_lines(df: pd.DataFrame, cols: list = None, cols_like: list = None, x: s
     if w:
         p.update_layout(width=w)
 
-    # add any shaded regions
     if shade_regions:
         shapes_to_add = []
         for x_from, x_to, shade_color in shade_regions:
@@ -86,7 +85,6 @@ def plot_lines(df: pd.DataFrame, cols: list = None, cols_like: list = None, x: s
         # now add relevant shapes
         p.update_layout(shapes=shapes_to_add)
 
-    # add any markers
     if marker_list:
         for x_at, marker_label in marker_list:
             # check if region is in the data to be plotted and only plot if is
@@ -98,15 +96,13 @@ def plot_lines(df: pd.DataFrame, cols: list = None, cols_like: list = None, x: s
 
     p.update_layout(template=theme)
 
-    if out_path:
-        out_dir = '/'.join(out_path.split('/')[0:-1])
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
-        plotly.offline.plot(p, filename=out_path, auto_open=False)
-    if show_p:
-        p.show(renderer=renderer)
-    if return_p:
-        return p
+    if visible_legendonly:
+        p.update_traces(visible='legendonly')
+
+    if hide_y_axis:
+        p.update_yaxes(showticklabels=False, showgrid=False, showline=False, ticks="")
+
+    return p
 
 
 def plot_lines_grid(df: pd.DataFrame, cols: list = None, cols_like: list = None, x: str = None, title: str = None,
@@ -212,15 +208,4 @@ def plot_lines_grid(df: pd.DataFrame, cols: list = None, cols_like: list = None,
     p.update_yaxes(visible=yaxes_visible)
     p.update_xaxes(visible=xaxes_visible)
 
-    # save file
-    if out_path:
-        out_dir = '/'.join(out_path.split('/')[0:-1])
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
-        plotly.offline.plot(p, filename=out_path, auto_open=False)
-
-    if show_p:
-        p.show(renderer=renderer)
-
-    if return_p:
-        return p
+    return p

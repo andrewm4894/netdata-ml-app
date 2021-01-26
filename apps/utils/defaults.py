@@ -1,5 +1,5 @@
 
-DEFAULT_STYLE = {"margin": "2px", "padding": "2px"}
+DEFAULT_STYLE = {"margin": "4px", "padding": "4px"}
 
 
 def make_empty_fig(msg=''):

@@ -15,61 +15,63 @@ from .plots.lines import plot_lines, plot_lines_grid
 from .plots.scatter import plot_scatters
 from .plots.hists import plot_hists
 from .data.core import normalize_df, smooth_df
+from .help.metrics_explorer import help, toggle_help
 
-DEFAULT_ME_OPTS = 'smooth_n=5'
-DEFAULT_ME_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
+DEFAULT_OPTS = 'smooth_n=5'
+DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
 
-me_main_menu = dbc.Col(dbc.ButtonGroup(
+main_menu = dbc.Col(dbc.ButtonGroup(
     [
         dbc.Button('Home', href='/'),
+        dbc.Button("Help", id="me-help-open"),
         dbc.Button('Run', id='me-btn-run', n_clicks=0),
     ]
 ))
-me_inputs_host = dbc.FormGroup(
+inputs_host = dbc.FormGroup(
     [
         dbc.Label('host', id='me-label-host', html_for='me-input-host', style={'margin': '4px', 'padding': '0px'}),
         dbc.Input(id='me-input-host', value='london.my-netdata.io', type='text', placeholder='host'),
         dbc.Tooltip('Host you would like to pull data from.', target='me-label-host')
     ]
 )
-me_inputs_metrics = dbc.FormGroup(
+inputs_metrics = dbc.FormGroup(
     [
         dbc.Label('metrics', id='me-label-metrics', html_for='me-input-metrics', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-metrics', value=DEFAULT_ME_METRICS, type='text', placeholder=DEFAULT_ME_METRICS),
+        dbc.Input(id='me-input-metrics', value=DEFAULT_METRICS, type='text', placeholder=DEFAULT_METRICS),
         dbc.Tooltip('Metrics to explore.', target='me-label-metrics')
     ]
 )
-me_inputs_after = dbc.FormGroup(
+inputs_after = dbc.FormGroup(
     [
         dbc.Label('after', id='me-label-after', html_for='me-input-after', style={'margin': '4px', 'padding': '0px'}),
         dbc.Input(id='me-input-after', value=-1800, type='number', placeholder=-1800),
         dbc.Tooltip('"after" as per netdata rest api.', target='me-label-after')
     ]
 )
-me_inputs_before = dbc.FormGroup(
+inputs_before = dbc.FormGroup(
     [
         dbc.Label('before', id='me-label-before', html_for='me-input-before', style={'margin': '4px', 'padding': '0px'}),
         dbc.Input(id='me-input-before', value=0, type='number', placeholder=0),
         dbc.Tooltip('"before" as per netdata rest api.', target='me-label-before')
     ]
 )
-me_inputs_opts = dbc.FormGroup(
+inputs_opts = dbc.FormGroup(
     [
         dbc.Label('options', id='me-label-opts', html_for='me-input-opts', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-opts', value=DEFAULT_ME_OPTS, type='text', placeholder=DEFAULT_ME_OPTS),
+        dbc.Input(id='me-input-opts', value=DEFAULT_OPTS, type='text', placeholder=DEFAULT_OPTS),
         dbc.Tooltip('list of key values to pass to underlying code.', target='me-label-opts')
     ]
 )
-me_inputs = dbc.Row(
+inputs = dbc.Row(
     [
-        dbc.Col(me_inputs_host, width=3),
-        dbc.Col(me_inputs_metrics, width=3),
-        dbc.Col(me_inputs_after, width=2),
-        dbc.Col(me_inputs_before, width=2),
-        dbc.Col(me_inputs_opts, width=2),
+        dbc.Col(inputs_host, width=3),
+        dbc.Col(inputs_metrics, width=3),
+        dbc.Col(inputs_after, width=2),
+        dbc.Col(inputs_before, width=2),
+        dbc.Col(inputs_opts, width=2),
     ], style={'margin': '0px', 'padding': '0px'}
 )
-me_tabs = dbc.Tabs(
+tabs = dbc.Tabs(
     [
         dbc.Tab(label='Lines', tab_id='me-tab-ts-plots'),
         dbc.Tab(label='Scatters', tab_id='me-tab-scatter-plots'),
@@ -79,9 +81,10 @@ me_tabs = dbc.Tabs(
 layout = html.Div(
     [
         logo,
-        me_main_menu,
-        me_inputs,
-        me_tabs,
+        main_menu,
+        help,
+        inputs,
+        tabs,
         dbc.Spinner(children=[html.Div(children=html.Div(id='me-figs'))]),
     ], style=DEFAULT_STYLE
 )
@@ -97,7 +100,7 @@ layout = html.Div(
     State('me-input-before', 'value'),
     State('me-input-opts', 'value'),
 )
-def cp_run(n_clicks, tab, host, metrics, after, before, opts='',
+def run(n_clicks, tab, host, metrics, after, before, opts='',
         smooth_n='0', n_cols='3', h='1200', w='1200', diff='False'):
 
     # define some global variables and state change helpers

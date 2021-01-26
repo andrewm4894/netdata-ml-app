@@ -13,60 +13,63 @@ from .utils.utils import process_opts
 from .clustering.core import Clusterer
 from .plots.lines import plot_lines, plot_lines_grid
 
-DEFAULT_CL_OPTS = 'k=20'
+#DEFAULT_OPTS = 'k=20'
+#DEFAULT_CHARTS_REGEX = 'system.*|apps.*|users.*|groups.*'
+#DEFAULT_CHARTS_REGEX = '.*'
+DEFAULT_OPTS = 'k=8'
+DEFAULT_CHARTS_REGEX = 'system.*'
 
-cl_main_menu = dbc.Col(dbc.ButtonGroup(
+main_menu = dbc.Col(dbc.ButtonGroup(
     [
         dbc.Button('Home', href='/'),
         dbc.Button('Run', id='cl-btn-run', n_clicks=0),
     ]
 ))
-cl_inputs_host = dbc.FormGroup(
+inputs_host = dbc.FormGroup(
     [
         dbc.Label('host', id='cl-label-host', html_for='cl-input-host', style={'margin': '4px', 'padding': '0px'}),
         dbc.Input(id='cl-input-host', value='london.my-netdata.io', type='text', placeholder='host'),
         dbc.Tooltip('Host you would like to pull data from.', target='cl-label-host')
     ]
 )
-cl_inputs_charts_regex = dbc.FormGroup(
+inputs_charts_regex = dbc.FormGroup(
     [
         dbc.Label('charts regex', id='cl-label-charts-regex', html_for='cl-input-charts-regex', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='cl-input-charts-regex', value='system.*|apps.*|users.*|groups.*', type='text', placeholder='system.*'),
-        #dbc.Input(id='cl-input-charts-regex', value='.*', type='text', placeholder='system.*'),
+        dbc.Input(id='cl-input-charts-regex', value=DEFAULT_CHARTS_REGEX, type='text', placeholder='system.*'),
         dbc.Tooltip('Regex for charts to pull.', target='cl-label-charts-regex')
     ]
 )
-cl_inputs_after = dbc.FormGroup(
+inputs_after = dbc.FormGroup(
     [
         dbc.Label('after', id='cl-label-after', html_for='cl-input-after', style={'margin': '4px', 'padding': '0px'}),
         dbc.Input(id='cl-input-after', value=-1800, type='number', placeholder=-1800),
         dbc.Tooltip('"after" as per netdata rest api.', target='cl-label-after')
     ]
 )
-cl_inputs_before = dbc.FormGroup(
+inputs_before = dbc.FormGroup(
     [
         dbc.Label('before', id='cl-label-before', html_for='cl-input-before', style={'margin': '4px', 'padding': '0px'}),
         dbc.Input(id='cl-input-before', value=0, type='number', placeholder=0),
         dbc.Tooltip('"before" as per netdata rest api.', target='cl-label-before')
     ]
 )
-cl_inputs_opts = dbc.FormGroup(
+inputs_opts = dbc.FormGroup(
     [
         dbc.Label('options', id='cl-label-opts', html_for='cl-input-opts', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='cl-input-opts', value=DEFAULT_CL_OPTS, type='text', placeholder=DEFAULT_CL_OPTS),
+        dbc.Input(id='cl-input-opts', value=DEFAULT_OPTS, type='text', placeholder=DEFAULT_OPTS),
         dbc.Tooltip('list of key values to pass to underlying code.', target='cl-label-opts')
     ]
 )
-cl_inputs = dbc.Row(
+inputs = dbc.Row(
     [
-        dbc.Col(cl_inputs_host, width=3),
-        dbc.Col(cl_inputs_charts_regex, width=2),
-        dbc.Col(cl_inputs_after, width=2),
-        dbc.Col(cl_inputs_before, width=2),
-        dbc.Col(cl_inputs_opts, width=2),
+        dbc.Col(inputs_host, width=3),
+        dbc.Col(inputs_charts_regex, width=2),
+        dbc.Col(inputs_after, width=2),
+        dbc.Col(inputs_before, width=2),
+        dbc.Col(inputs_opts, width=2),
     ], style={'margin': '0px', 'padding': '0px'}
 )
-cl_tabs = dbc.Tabs(
+tabs = dbc.Tabs(
     [
         dbc.Tab(label='Cluster Centers', id='cl-id-tab-centers', tab_id='cl-tab-centers'),
         dbc.Tab(label='Cluster Details', id='cl-id-tab-details', tab_id='cl-tab-details'),
@@ -75,9 +78,9 @@ cl_tabs = dbc.Tabs(
 layout = html.Div(
     [
         logo,
-        cl_main_menu,
-        cl_inputs,
-        cl_tabs,
+        main_menu,
+        inputs,
+        tabs,
         dbc.Spinner(children=[html.Div(children=html.Div(id='cl-figs'))]),
     ], style=DEFAULT_STYLE
 )
@@ -93,7 +96,7 @@ layout = html.Div(
     State('cl-input-before', 'value'),
     State('cl-input-opts', 'value')
 )
-def cl_run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
+def run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
@@ -142,7 +145,7 @@ def cl_run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
         fig_centers = plot_lines_grid(
             df=model.df_cluster_centers[valid_clusters],
             subplot_titles=titles, h_each=300,
-            legend=False, yaxes_visible=False, xaxes_visible=False, show_p=False
+            legend=False, yaxes_visible=False, xaxes_visible=False
         )
         figs.append(html.Div(dcc.Graph(id='cl-fig-centers', figure=fig_centers)))
 
@@ -153,8 +156,7 @@ def cl_run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
             title = f"Cluster {cluster} (n={model.cluster_len_dict[cluster]}, score={model.cluster_quality_dict[cluster]})"
             plot_cols = model.cluster_metrics_dict[cluster]
             fig_cluster = plot_lines(
-                df=model.df, cols=plot_cols, title=title,
-                slider=False
+                df=model.df, cols=plot_cols, title=title, slider=False
             )
             figs.append(html.Div(dcc.Graph(id=f'fig-{cluster}', figure=fig_cluster)))
 

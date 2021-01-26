@@ -13,99 +13,110 @@ from netdata_pandas.data import get_data
 from app import app
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, empty_fig
+from .utils.utils import process_opts
 
+DEFAULT_OPTS = 'ref=30m'
 
 main_menu = dbc.Col(dbc.ButtonGroup(
     [
         dbc.Button('Home', href='/'),
-        dbc.Button('Run', id='btn-run', n_clicks=0),
+        dbc.Button('Run', id='pc-btn-run', n_clicks=0),
     ]
 ))
-
 inputs_host = dbc.FormGroup(
     [
-        dbc.Label('host', id='label-host', html_for='input-host', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='input-host', value='london.my-netdata.io', type='text', placeholder='host'),
-        dbc.Tooltip('Host you would like to pull data from.', target='label-host')
+        dbc.Label('host', id='pc-label-host', html_for='pc-input-host', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='pc-input-host', value='london.my-netdata.io', type='text', placeholder='host'),
+        dbc.Tooltip('Host you would like to pull data from.', target='pc-label-host')
     ]
 )
-
 inputs_charts_regex = dbc.FormGroup(
     [
-        dbc.Label('charts regex', id='label-charts-regex', html_for='input-charts-regex', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='input-charts-regex', value='system.*', type='text', placeholder='system.*'),
-        dbc.Tooltip('Regex for charts to pull.', target='label-charts-regex')
+        dbc.Label('charts regex', id='pc-label-charts-regex', html_for='pc-input-charts-regex', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='pc-input-charts-regex', value='system.*', type='text', placeholder='system.*'),
+        dbc.Tooltip('Regex for charts to pull.', target='pc-label-charts-regex')
     ]
 )
-
 inputs_after = dbc.FormGroup(
     [
-        dbc.Label('after', id='label-after', html_for='input-after', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='input-after', value=-900, type='number', placeholder=-900),
-        dbc.Tooltip('"after" as per netdata rest api.', target='label-after')
+        dbc.Label('after', id='pc-label-after', html_for='pc-input-after', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='pc-input-after', value=-1800, type='number', placeholder=-1800),
+        dbc.Tooltip('"after" as per netdata rest api.', target='pc-label-after')
     ]
 )
-
 inputs_before = dbc.FormGroup(
     [
-        dbc.Label('before', id='label-before', html_for='input-before', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='input-before', value=0, type='number', placeholder=0),
-        dbc.Tooltip('"before" as per netdata rest api.', target='label-before')
+        dbc.Label('before', id='pc-label-before', html_for='pc-input-before', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='pc-input-before', value=0, type='number', placeholder=0),
+        dbc.Tooltip('"before" as per netdata rest api.', target='pc-label-before')
     ]
 )
-
 inputs_ref = dbc.FormGroup(
     [
-        dbc.Label('ref', id='label-ref', html_for='input-ref', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='input-ref', value='4h', type='text', placeholder='4h'),
-        dbc.Tooltip('Reference window to use e.g 4h compares to previous 4 hours.', target='label-ref')
+        dbc.Label('ref', id='pc-label-ref', html_for='pc-input-ref', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='pc-input-ref', value='4h', type='text', placeholder='4h'),
+        dbc.Tooltip('Reference window to use e.g 4h compares to previous 4 hours.', target='pc-label-ref')
     ]
 )
-
+inputs_opts = dbc.FormGroup(
+    [
+        dbc.Label('options', id='pc-label-opts', html_for='pc-input-opts', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='pc-input-opts', value=DEFAULT_OPTS, type='text', placeholder=DEFAULT_OPTS),
+        dbc.Tooltip('list of key values to pass to underlying code.', target='pc-label-opts')
+    ]
+)
 inputs = dbc.Row(
     [
         dbc.Col(inputs_host, width=3),
-        dbc.Col(inputs_charts_regex, width=3),
+        dbc.Col(inputs_charts_regex, width=2),
         dbc.Col(inputs_after, width=2),
         dbc.Col(inputs_before, width=2),
-        dbc.Col(inputs_ref, width=1),
-        dbc.Col(html.Div(''), width=1)
+        dbc.Col(inputs_opts, width=2),
     ], style={'margin': '0px', 'padding': '0px'}
 )
-
 tabs = dbc.Tabs(
     [
-        dbc.Tab(label='Percentiles', tab_id='tab-percentiles'),
-    ], id='tabs', active_tab='tab-percentiles', style={'margin': '12px', 'padding': '2px'}
+        dbc.Tab(label='Percentiles', tab_id='pc-tab-percentiles'),
+    ], id='pc-tabs', active_tab='pc-tab-percentiles', style={'margin': '12px', 'padding': '2px'}
 )
-
 layout = html.Div(
     [
         logo,
         main_menu,
         inputs,
         tabs,
-        html.Div(children=html.Div(id='figs-percentiles')),
+        dbc.Spinner(children=[html.Div(children=html.Div(id='pc-figs'))]),
     ], style=DEFAULT_STYLE
 )
 
 
 @app.callback(
-    Output('figs-percentiles', 'children'),
-    Input('btn-run', 'n_clicks'),
-    Input('tabs', 'active_tab'),
-    State('input-host', 'value'),
-    State('input-charts-regex', 'value'),
-    State('input-after', 'value'),
-    State('input-before', 'value'),
-    State('input-ref', 'value'),
+    Output('pc-figs', 'children'),
+    Input('pc-btn-run', 'n_clicks'),
+    Input('pc-tabs', 'active_tab'),
+    State('pc-input-host', 'value'),
+    State('pc-input-charts-regex', 'value'),
+    State('pc-input-after', 'value'),
+    State('pc-input-before', 'value'),
+    State('pc-input-opts', 'value'),
 )
-def display_value(n_clicks, tab, host, charts_regex, after, before, ref):
+def run(n_clicks, tab, host, charts_regex, after, before, opts, ref='1h'):
+
     figs = []
-    if n_clicks > 0:
+
+    opts = process_opts(opts)
+    ref = opts.get('ref', ref)
+
+    if n_clicks == 0:
+        figs.append(html.Div(dcc.Graph(id='cp-fig', figure=empty_fig)))
+        return figs
+
+    else:
 
         if 'h' in ref:
             ref_timedelta = timedelta(hours=int(ref.replace('h', '')))
+        elif 'm' in ref:
+            ref_timedelta = timedelta(minutes=int(ref.replace('m', '')))
         else:
             ref_timedelta = timedelta(hours=1)
 
@@ -230,8 +241,6 @@ def display_value(n_clicks, tab, host, charts_regex, after, before, ref):
                     showlegend=False
                 )
                 figs.append(html.Div(dcc.Graph(id=f'fig-{n}', figure=fig)))
-    else:
-        figs.append(html.Div(dcc.Graph(id='fig-0', figure=empty_fig)))
 
     return figs
 

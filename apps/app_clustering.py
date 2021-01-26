@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import time
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -32,8 +31,8 @@ cl_inputs_host = dbc.FormGroup(
 cl_inputs_charts_regex = dbc.FormGroup(
     [
         dbc.Label('charts regex', id='cl-label-charts-regex', html_for='cl-input-charts-regex', style={'margin': '4px', 'padding': '0px'}),
-        #dbc.Input(id='cl-input-charts-regex', value='system.*|apps.*|users.*|groups.*', type='text', placeholder='system.*'),
-        dbc.Input(id='cl-input-charts-regex', value='.*', type='text', placeholder='system.*'),
+        dbc.Input(id='cl-input-charts-regex', value='system.*|apps.*|users.*|groups.*', type='text', placeholder='system.*'),
+        #dbc.Input(id='cl-input-charts-regex', value='.*', type='text', placeholder='system.*'),
         dbc.Tooltip('Regex for charts to pull.', target='cl-label-charts-regex')
     ]
 )
@@ -96,28 +95,24 @@ layout = html.Div(
 )
 def cl_run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
 
-    time_start = time.time()
-
-    def run_model(host, charts_regex, after, before, k):
-        model = Clusterer([host], charts_regex=charts_regex, after=after, before=before, n_clusters=k)
-        model.run_all()
-        valid_clusters = model.df_cluster_meta[model.df_cluster_meta['valid'] == 1].index
-        return model, valid_clusters
+    # define some global variables and state change helpers
+    global states_previous, states_current, inputs_previous, inputs_current
+    global return_error
+    global model, valid_clusters
+    ctx = dash.callback_context
+    inputs_current, states_current = ctx.inputs, ctx.states
+    was_button_clicked, has_state_changed, is_initial_run = False, False, True
+    if 'states_previous' in globals():
+        if set(states_previous.values()) != set(states_current.values()):
+            has_state_changed = True
+        is_initial_run = False
+    if 'inputs_previous' in globals():
+        if inputs_current['cl-btn-run.n_clicks'] > inputs_previous['cl-btn-run.n_clicks']:
+            was_button_clicked = True
+    recalculate = True if was_button_clicked or is_initial_run or has_state_changed else False
 
     opts = process_opts(opts)
     k = int(opts.get('k', k))
-
-    cl_ctx = dash.callback_context
-
-    global cl_states_previous
-    global cl_states_current
-    global cl_inputs_previous
-    global cl_inputs_current
-    global cl_model
-    global cl_valid_clusters
-
-    cl_states_current = cl_ctx.states
-    cl_inputs_current = cl_ctx.inputs
 
     figs = []
 
@@ -125,50 +120,46 @@ def cl_run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
         figs.append(html.Div(dcc.Graph(id='cl-fig-changepoint', figure=empty_fig)))
         return figs
 
-    if 'cl_states_previous' in globals():
+    # only do expensive work if needed
+    if recalculate:
 
-        if set(cl_states_previous.values()) != set(cl_states_current.values()):
-            cl_model, cl_valid_clusters = run_model(host, charts_regex, after, before, k)
-        elif cl_inputs_current['cl-btn-run.n_clicks'] != cl_inputs_previous['cl-btn-run.n_clicks']:
-            cl_model, cl_valid_clusters = run_model(host, charts_regex, after, before, k)
+        model = Clusterer([host], charts_regex=charts_regex, after=after, before=before, n_clusters=k)
+        model.run_all()
+        valid_clusters = model.df_cluster_meta[model.df_cluster_meta['valid'] == 1].index
+        if len(valid_clusters) == 0:
+            return_error = True
+        else:
+            return_error = False
 
-    else:
-
-        cl_model, cl_valid_clusters = run_model(host, charts_regex, after, before, k)
-
-    if len(cl_valid_clusters) == 0:
+    if return_error:
         figs.append(html.Div(dcc.Graph(id='cl-fig-changepoint', figure=make_empty_fig('No clusters found!'))))
         return figs
 
     if tab == 'cl-tab-centers':
 
         titles = [f'{int(x[0])} - n={int(x[1])}, qs={x[2]}' for x in
-                  cl_model.df_cluster_meta.loc[cl_valid_clusters].reset_index().values.tolist()]
+                  model.df_cluster_meta.loc[valid_clusters].reset_index().values.tolist()]
         fig_centers = plot_lines_grid(
-            df=cl_model.df_cluster_centers[cl_valid_clusters],
-            subplot_titles=titles, return_p=True, h_each=300,
+            df=model.df_cluster_centers[valid_clusters],
+            subplot_titles=titles, h_each=300,
             legend=False, yaxes_visible=False, xaxes_visible=False, show_p=False
         )
         figs.append(html.Div(dcc.Graph(id='cl-fig-centers', figure=fig_centers)))
 
     else:
 
-        for cluster in cl_valid_clusters:
+        for cluster in valid_clusters:
 
-            title = f"Cluster {cluster} (n={cl_model.cluster_len_dict[cluster]}, score={cl_model.cluster_quality_dict[cluster]})"
-            plot_cols = cl_model.cluster_metrics_dict[cluster]
+            title = f"Cluster {cluster} (n={model.cluster_len_dict[cluster]}, score={model.cluster_quality_dict[cluster]})"
+            plot_cols = model.cluster_metrics_dict[cluster]
             fig_cluster = plot_lines(
-                df=cl_model.df, cols=plot_cols, title=title, return_p=True, show_p=False,
+                df=model.df, cols=plot_cols, title=title,
                 slider=False
             )
             figs.append(html.Div(dcc.Graph(id=f'fig-{cluster}', figure=fig_cluster)))
 
-    cl_states_previous = cl_states_current
-    cl_inputs_previous = cl_inputs_current
-
-    time_end = time.time()
-    time_taken = round(time_end - time_start, 2)
-    print(f'time_taken={time_taken}')
+    states_previous = states_current
+    inputs_previous = inputs_current
 
     return figs
 

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
@@ -12,6 +13,7 @@ from .utils.defaults import DEFAULT_STYLE, empty_fig
 from .utils.utils import process_opts
 from .plots.lines import plot_lines, plot_lines_grid
 from .plots.scatter import plot_scatters
+from .plots.hists import plot_hists
 from .data.core import normalize_df, smooth_df
 
 DEFAULT_ME_OPTS = 'smooth_n=5'
@@ -71,6 +73,7 @@ me_tabs = dbc.Tabs(
     [
         dbc.Tab(label='Lines', tab_id='me-tab-ts-plots'),
         dbc.Tab(label='Scatters', tab_id='me-tab-scatter-plots'),
+        dbc.Tab(label='Histograms', tab_id='me-tab-hist-plots'),
     ], id='me-tabs', active_tab='me-tab-ts-plots', style={'margin': '12px', 'padding': '2px'}
 )
 layout = html.Div(
@@ -94,9 +97,23 @@ layout = html.Div(
     State('me-input-before', 'value'),
     State('me-input-opts', 'value'),
 )
-def cp_run(
-        n_clicks, tab, host, metrics, after, before, opts='',
+def cp_run(n_clicks, tab, host, metrics, after, before, opts='',
         smooth_n='0', n_cols='3', h='1200', w='1200', diff='False'):
+
+    # define some global variables and state change helpers
+    global states_previous, states_current, inputs_previous, inputs_current
+    global df
+    ctx = dash.callback_context
+    inputs_current, states_current = ctx.inputs, ctx.states
+    was_button_clicked, has_state_changed, is_initial_run = False, False, True
+    if 'states_previous' in globals():
+        if set(states_previous.values()) != set(states_current.values()):
+            has_state_changed = True
+        is_initial_run = False
+    if 'inputs_previous' in globals():
+        if inputs_current['me-btn-run.n_clicks'] > inputs_previous['me-btn-run.n_clicks']:
+            was_button_clicked = True
+    recalculate = True if was_button_clicked or is_initial_run or has_state_changed else False
 
     figs = []
 
@@ -108,42 +125,48 @@ def cp_run(
     diff = True if opts.get('diff', diff).lower() == 'true' else False
 
     if n_clicks == 0:
-
         figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=empty_fig)))
+        return figs
 
-    else:
+    if recalculate:
 
         metrics = metrics.split(',')
         charts = list(set([m.split('|')[0] for m in metrics]))
         df = get_data(hosts=[host], charts=charts, after=after, before=before, index_as_datetime=True)
         df = df[metrics]
-
         if smooth_n >= 1:
             df = smooth_df(df, smooth_n)
-
         if diff:
             df = df.diff()
 
-        if tab == 'me-tab-ts-plots':
+    if tab == 'me-tab-ts-plots':
 
-            fig = plot_lines(
-                normalize_df(df), h=600, lw=1, visible_legendonly=False, hide_y_axis=True
-            )
-            figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot', figure=fig)))
+        fig = plot_lines(
+            normalize_df(df), h=600, lw=1, visible_legendonly=False, hide_y_axis=True
+        )
+        figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot', figure=fig)))
 
-            fig = plot_lines_grid(
-                df, h=75*len(df.columns), xaxes_visible=False, legend=False, yaxes_visible=False
-            )
-            figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot-grid', figure=fig)))
+        fig = plot_lines_grid(
+            df, h=75*len(df.columns), xaxes_visible=False, legend=True, yaxes_visible=False, subplot_titles=['']
+        )
+        figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot-grid', figure=fig)))
 
-        elif tab == 'me-tab-scatter-plots':
+    elif tab == 'me-tab-scatter-plots':
 
-            fig = plot_scatters(
-                df, return_p=True, show_p=False, n_cols=n_cols,
-                #h=int((h/n_cols)*len(df.columns)),
-                w=w, h=400*len(df.columns)
-            )
-            figs.append(html.Div(dcc.Graph(id='me-fig-scatter-plot', figure=fig)))
+        fig = plot_scatters(
+            df, n_cols=n_cols, w=w, h=600*len(df.columns)
+        )
+        figs.append(html.Div(dcc.Graph(id='me-fig-scatter-plot', figure=fig)))
+
+    elif tab == 'me-tab-hist-plots':
+
+        fig = plot_hists(
+            df, shared_yaxes=False, n_cols=n_cols, w=w, h=1200,
+        )
+        figs.append(html.Div(dcc.Graph(id='me-fig-hist-plot', figure=fig)))
+
+    states_previous = states_current
+    inputs_previous = inputs_current
 
     return figs
 

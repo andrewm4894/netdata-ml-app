@@ -1,8 +1,6 @@
-import os
 
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.offline
 from plotly.subplots import make_subplots
 from ..utils.utils import get_cols_like
 
@@ -106,9 +104,8 @@ def plot_lines(df: pd.DataFrame, cols: list = None, cols_like: list = None, x: s
 
 
 def plot_lines_grid(df: pd.DataFrame, cols: list = None, cols_like: list = None, x: str = None, title: str = None,
-                    slider: bool = False, out_path: str = None, show_p: bool = True, return_p: bool = False,
-                    h: int = None, w: int = None, vertical_spacing: float = 0.002, theme: str = 'simple_white',
-                    lw: int = 1, renderer: str = 'browser', shade_regions: list = None, shade_opacity: float = 0.5,
+                    slider: bool = False, h: int = None, w: int = None, vertical_spacing: float = 0.002,
+                    theme: str = 'simple_white', lw: int = 1, shade_regions: list = None, shade_opacity: float = 0.5,
                     shade_line_width: int = 0, marker_list: list = None, marker_mode: str = "markers",
                     marker_position: str = "bottom center", marker_color: str = 'Red', marker_size: int = 5,
                     marker_symbol: str = 'circle-open', h_each: int = None, legend: bool = True,
@@ -165,8 +162,6 @@ def plot_lines_grid(df: pd.DataFrame, cols: list = None, cols_like: list = None,
                 row=(1+i),
                 col=1
             )
-
-    #p.update_layout(hoverlabel=dict(namelength=-1))
 
     if title:
         p.update_layout(title_text=title)

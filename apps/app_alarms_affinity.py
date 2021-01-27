@@ -11,7 +11,7 @@ from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, empty_fig, make_empty_fig
 from .utils.utils import process_opts
 from .alarms_affinity.core import process_basket, make_baskets, make_table, itemsets_tooltips, rules_tooltips
-from .help.alarms_affinity import help, toggle_help
+from .help_popup.alarms_affinity import help, toggle_help
 
 DEFAULT_OPTS = 'window=1m'
 

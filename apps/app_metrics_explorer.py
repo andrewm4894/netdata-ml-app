@@ -6,6 +6,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from netdata_pandas.data import get_data
+from datetime import datetime, timedelta
 
 from app import app
 from .utils.logo import logo
@@ -15,10 +16,13 @@ from .plots.lines import plot_lines, plot_lines_grid
 from .plots.scatter import plot_scatters
 from .plots.hists import plot_hists
 from .data.core import normalize_df, smooth_df
-from .help.metrics_explorer import help, toggle_help
+from .help_popup.metrics_explorer import help, toggle_help
 
 DEFAULT_OPTS = 'smooth_n=5'
-DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
+DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.load|load1'
+DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
+DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
+
 
 main_menu = dbc.Col(dbc.ButtonGroup(
     [
@@ -44,14 +48,14 @@ inputs_metrics = dbc.FormGroup(
 inputs_after = dbc.FormGroup(
     [
         dbc.Label('after', id='me-label-after', html_for='me-input-after', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-after', value=-1800, type='number', placeholder=-1800),
+        dbc.Input(id='me-input-after', value=DEFAULT_AFTER, type='datetime-local'),
         dbc.Tooltip('"after" as per netdata rest api.', target='me-label-after')
     ]
 )
 inputs_before = dbc.FormGroup(
     [
         dbc.Label('before', id='me-label-before', html_for='me-input-before', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-before', value=0, type='number', placeholder=0),
+        dbc.Input(id='me-input-before', value=DEFAULT_BEFORE, type='datetime-local'),
         dbc.Tooltip('"before" as per netdata rest api.', target='me-label-before')
     ]
 )
@@ -59,16 +63,16 @@ inputs_opts = dbc.FormGroup(
     [
         dbc.Label('options', id='me-label-opts', html_for='me-input-opts', style={'margin': '4px', 'padding': '0px'}),
         dbc.Input(id='me-input-opts', value=DEFAULT_OPTS, type='text', placeholder=DEFAULT_OPTS),
-        dbc.Tooltip('list of key values to pass to underlying code.', target='me-label-opts')
+        dbc.Tooltip('List of optional key values to pass to underlying code.', target='me-label-opts')
     ]
 )
 inputs = dbc.Row(
     [
         dbc.Col(inputs_host, width=3),
         dbc.Col(inputs_metrics, width=3),
-        dbc.Col(inputs_after, width=2),
-        dbc.Col(inputs_before, width=2),
-        dbc.Col(inputs_opts, width=2),
+        dbc.Col(inputs_after, width=3),
+        dbc.Col(inputs_before, width=3),
+        dbc.Col(inputs_opts, width=6),
     ], style={'margin': '0px', 'padding': '0px'}
 )
 tabs = dbc.Tabs(
@@ -126,6 +130,8 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
     h = int(opts.get('h', h))
     w = int(opts.get('w', w))
     diff = True if opts.get('diff', diff).lower() == 'true' else False
+    after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
+    before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=empty_fig)))
@@ -150,7 +156,8 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
         figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot', figure=fig)))
 
         fig = plot_lines_grid(
-            df, h=75*len(df.columns), xaxes_visible=False, legend=True, yaxes_visible=False, subplot_titles=['']
+            df, h=200*len(df.columns), xaxes_visible=False, legend=True, yaxes_visible=False, subplot_titles=[''],
+
         )
         figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot-grid', figure=fig)))
 

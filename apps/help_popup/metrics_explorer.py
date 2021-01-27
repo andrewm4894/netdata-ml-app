@@ -7,23 +7,26 @@ from dash.dependencies import Input, Output, State
 from app import app
 
 help_body = """
-A brief description  
+Explore some specific metrics of interest in various ways.  
   
 ###### Lines  
-some info.  
+Time series plots to see metrics over time on the same plot.  
 
 ###### Scatters  
-some more info.  
+Look at scatter plots of all pairs of metrics of interest.  
 
 ###### Histograms  
-some more info.  
+Histograms for each metric.  
 """
 
 help = html.Div([
     dbc.Modal([
         dbc.ModalHeader("Metrics Explorer"),
         dbc.ModalBody(dcc.Markdown(help_body)),
-        dbc.ModalFooter(dbc.Button("Close", id="me-help-close", className="ml-auto")),
+        dbc.ModalFooter(
+            dbc.ButtonGroup([dbc.Button("More Help!", href="/metrics-explorer-help"), dbc.Button("Close", id="me-help-close", className="ml-auto")])
+        #dbc.Button("Close", id="me-help-close", className="ml-auto")
+    ),
     ], id="me-modal")]
 )
 

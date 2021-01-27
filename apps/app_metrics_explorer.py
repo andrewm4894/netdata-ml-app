@@ -19,7 +19,8 @@ from .data.core import normalize_df, smooth_df
 from .help_popup.metrics_explorer import help, toggle_help
 
 DEFAULT_OPTS = 'smooth_n=5'
-DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.load|load1'
+#DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.load|load1'
+DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
@@ -156,7 +157,7 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
         figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot', figure=fig)))
 
         fig = plot_lines_grid(
-            df, h=200*len(df.columns), xaxes_visible=False, legend=True, yaxes_visible=False, subplot_titles=[''],
+            df, h=max(300, 75*len(df.columns)), xaxes_visible=False, legend=True, yaxes_visible=False, subplot_titles=[''],
 
         )
         figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot-grid', figure=fig)))

@@ -21,12 +21,12 @@ main_menu = dbc.Col(dbc.ButtonGroup(
         dbc.Button('Home', href='/'),
         dbc.Button("Metrics Explorer", href="/metrics-explorer"),
     ]
-), style=DEFAULT_STYLE)
+))
 layout = html.Div(
     [
         logo,
         main_menu,
-        dcc.Markdown(help_body, style=DEFAULT_STYLE)
+        html.Div([dcc.Markdown(help_body)], style={"margin": "8px", "padding": "8px"})
     ], style=DEFAULT_STYLE
 )
 

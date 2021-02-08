@@ -1,17 +1,11 @@
-FROM python:3.8
+FROM python:3.8-slim-buster
 
-COPY requirements.txt /
-
-RUN pip install -r /requirements.txt
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
 
 COPY ./apps ./apps
-
 COPY ./assets ./assets
+COPY app.py ./
+COPY index.py ./
 
-COPY ./app.py ./app.py
-
-COPY ./index.py ./index.py
-
-EXPOSE 29999
-
-CMD ["python", "./index.py"]
+CMD [ "gunicorn", "--workers=2", "--threads=1", "-b 0.0.0.0:29999", "index:server"]

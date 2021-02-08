@@ -11,7 +11,7 @@ from apps import (
     help_metrics_explorer
 )
 
-
+server = app.server
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content')
@@ -42,4 +42,4 @@ def display_page(pathname):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=29999)
+    app.run_server()

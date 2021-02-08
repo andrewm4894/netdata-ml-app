@@ -3,7 +3,6 @@ version: '3'
 networks:
   netdata-ml-app-network:
 services:
-  # main application
   netdata-ml-app:
     container_name: netdata-ml-app
     build:

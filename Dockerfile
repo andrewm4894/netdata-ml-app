@@ -1,20 +1,17 @@
-  
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
+FROM python:3.8
 
-# set ENV arg
-ARG ENV=local
+COPY requirements.txt /
 
-# copy requirements
-COPY requirements.txt /app/requirements.txt
+RUN pip install -r /requirements.txt
 
-# install app requirements
-RUN pip install -r /app/requirements.txt
+COPY ./apps ./apps
 
-# install pytest and requests for testing
-RUN pip install pytest==6.0.1 requests==2.24.0
+COPY ./assets ./assets
 
-# copy app folder
-COPY ./app /app
+COPY ./app.py ./app.py
 
-# run tests
-RUN pytest
+COPY ./index.py ./index.py
+
+EXPOSE 8050
+
+CMD ["python", "./app.py"]

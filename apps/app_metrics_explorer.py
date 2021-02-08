@@ -1,0 +1,183 @@
+# -*- coding: utf-8 -*-
+
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output, State
+import dash_bootstrap_components as dbc
+from netdata_pandas.data import get_data
+from datetime import datetime, timedelta
+
+from app import app
+from .utils.logo import logo
+from .utils.defaults import DEFAULT_STYLE, empty_fig
+from .utils.utils import process_opts
+from .plots.lines import plot_lines, plot_lines_grid
+from .plots.scatter import plot_scatters
+from .plots.hists import plot_hists
+from .data.core import normalize_df, smooth_df
+from .help_popup.metrics_explorer import help, toggle_help
+
+DEFAULT_OPTS = 'smooth_n=5'
+#DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.load|load1'
+DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
+DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
+DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
+
+
+main_menu = dbc.Col(dbc.ButtonGroup(
+    [
+        dbc.Button('Home', href='/'),
+        dbc.Button("Help", id="me-help-open"),
+        dbc.Button('Run', id='me-btn-run', n_clicks=0),
+    ]
+))
+inputs_host = dbc.FormGroup(
+    [
+        dbc.Label('host', id='me-label-host', html_for='me-input-host', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='me-input-host', value='london.my-netdata.io', type='text', placeholder='host'),
+        dbc.Tooltip('Host you would like to pull data from.', target='me-label-host')
+    ]
+)
+inputs_metrics = dbc.FormGroup(
+    [
+        dbc.Label('metrics', id='me-label-metrics', html_for='me-input-metrics', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='me-input-metrics', value=DEFAULT_METRICS, type='text', placeholder=DEFAULT_METRICS),
+        dbc.Tooltip('Metrics to explore.', target='me-label-metrics')
+    ]
+)
+inputs_after = dbc.FormGroup(
+    [
+        dbc.Label('after', id='me-label-after', html_for='me-input-after', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='me-input-after', value=DEFAULT_AFTER, type='datetime-local'),
+        dbc.Tooltip('"after" as per netdata rest api.', target='me-label-after')
+    ]
+)
+inputs_before = dbc.FormGroup(
+    [
+        dbc.Label('before', id='me-label-before', html_for='me-input-before', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='me-input-before', value=DEFAULT_BEFORE, type='datetime-local'),
+        dbc.Tooltip('"before" as per netdata rest api.', target='me-label-before')
+    ]
+)
+inputs_opts = dbc.FormGroup(
+    [
+        dbc.Label('options', id='me-label-opts', html_for='me-input-opts', style={'margin': '4px', 'padding': '0px'}),
+        dbc.Input(id='me-input-opts', value=DEFAULT_OPTS, type='text', placeholder=DEFAULT_OPTS),
+        dbc.Tooltip('List of optional key values to pass to underlying code.', target='me-label-opts')
+    ]
+)
+inputs = dbc.Row(
+    [
+        dbc.Col(inputs_host, width=3),
+        dbc.Col(inputs_metrics, width=3),
+        dbc.Col(inputs_after, width=3),
+        dbc.Col(inputs_before, width=3),
+        dbc.Col(inputs_opts, width=6),
+    ], style={'margin': '0px', 'padding': '0px'}
+)
+tabs = dbc.Tabs(
+    [
+        dbc.Tab(label='Lines', tab_id='me-tab-ts-plots'),
+        dbc.Tab(label='Scatters', tab_id='me-tab-scatter-plots'),
+        dbc.Tab(label='Histograms', tab_id='me-tab-hist-plots'),
+    ], id='me-tabs', active_tab='me-tab-ts-plots', style={'margin': '12px', 'padding': '2px'}
+)
+layout = html.Div(
+    [
+        logo,
+        main_menu,
+        help,
+        inputs,
+        tabs,
+        dbc.Spinner(children=[html.Div(children=html.Div(id='me-figs'))]),
+    ], style=DEFAULT_STYLE
+)
+
+
+@app.callback(
+    Output('me-figs', 'children'),
+    Input('me-btn-run', 'n_clicks'),
+    Input('me-tabs', 'active_tab'),
+    State('me-input-host', 'value'),
+    State('me-input-metrics', 'value'),
+    State('me-input-after', 'value'),
+    State('me-input-before', 'value'),
+    State('me-input-opts', 'value'),
+)
+def run(n_clicks, tab, host, metrics, after, before, opts='',
+        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False'):
+
+    # define some global variables and state change helpers
+    global states_previous, states_current, inputs_previous, inputs_current
+    global df
+    ctx = dash.callback_context
+    inputs_current, states_current = ctx.inputs, ctx.states
+    was_button_clicked, has_state_changed, is_initial_run = False, False, True
+    if 'states_previous' in globals():
+        if set(states_previous.values()) != set(states_current.values()):
+            has_state_changed = True
+        is_initial_run = False
+    if 'inputs_previous' in globals():
+        if inputs_current['me-btn-run.n_clicks'] > inputs_previous['me-btn-run.n_clicks']:
+            was_button_clicked = True
+    recalculate = True if was_button_clicked or is_initial_run or has_state_changed else False
+
+    figs = []
+
+    opts = process_opts(opts)
+    smooth_n = int(opts.get('smooth_n', smooth_n))
+    n_cols = int(opts.get('n_cols', n_cols))
+    h = int(opts.get('h', h))
+    w = int(opts.get('w', w))
+    diff = True if opts.get('diff', diff).lower() == 'true' else False
+    after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
+    before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
+
+    if n_clicks == 0:
+        figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=empty_fig)))
+        return figs
+
+    if recalculate:
+
+        metrics = metrics.split(',')
+        charts = list(set([m.split('|')[0] for m in metrics]))
+        df = get_data(hosts=[host], charts=charts, after=after, before=before, index_as_datetime=True)
+        df = df[metrics]
+        if smooth_n >= 1:
+            df = smooth_df(df, smooth_n)
+        if diff:
+            df = df.diff()
+
+    if tab == 'me-tab-ts-plots':
+
+        fig = plot_lines(
+            normalize_df(df), h=600, lw=1, visible_legendonly=False, hide_y_axis=True
+        )
+        figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot', figure=fig)))
+
+        fig = plot_lines_grid(
+            df, h=max(300, 75*len(df.columns)), xaxes_visible=False, legend=True, yaxes_visible=False, subplot_titles=[''],
+
+        )
+        figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot-grid', figure=fig)))
+
+    elif tab == 'me-tab-scatter-plots':
+
+        fig = plot_scatters(
+            df, n_cols=n_cols, w=w, h=600*len(df.columns)
+        )
+        figs.append(html.Div(dcc.Graph(id='me-fig-scatter-plot', figure=fig)))
+
+    elif tab == 'me-tab-hist-plots':
+
+        fig = plot_hists(
+            df, shared_yaxes=False, n_cols=n_cols, w=w, h=1200,
+        )
+        figs.append(html.Div(dcc.Graph(id='me-fig-hist-plot', figure=fig)))
+
+    states_previous = states_current
+    inputs_previous = inputs_current
+
+    return figs
+

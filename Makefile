@@ -1,5 +1,3 @@
-include .env
-
 ENV=local
 APP=netdata-ml-app
 
@@ -14,7 +12,7 @@ stop:
 
 .PHONY: start
 start: stop
-	docker run --rm -d -p 80:80 -e LOG_LEVEL=DEBUG $(APP)
+	docker run --rm -d -p 29999:29999 -e LOG_LEVEL=DEBUG $(APP)
 
 .PHONY: logs
 logs:
@@ -23,11 +21,3 @@ logs:
 .PHONY: test
 test:
 	cd app; pytest
-
-.PHONY: requirements
-requirements:
-	pipenv lock -r > requirements.txt
-
-.PHONY: rmi
-remove-images:
-	docker rmi $(APP)

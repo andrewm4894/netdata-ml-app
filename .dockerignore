@@ -1,0 +1,17 @@
+**/*.md
+
+.git*
+.travis*
+
+Dockerfile
+.dockerignore
+
+Makefile
+
+.DS_Store
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache

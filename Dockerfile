@@ -12,6 +12,6 @@ COPY ./app.py ./app.py
 
 COPY ./index.py ./index.py
 
-EXPOSE 8050
+EXPOSE 29999
 
-CMD ["python", "./app.py"]
+CMD ["python", "./index.py"]

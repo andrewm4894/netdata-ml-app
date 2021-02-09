@@ -14,9 +14,11 @@ from .utils.utils import process_opts
 from .alarms_affinity.core import process_basket, make_baskets, make_table, itemsets_tooltips, rules_tooltips
 from .help_popup.alarms_affinity import help, toggle_help
 
+# defaults
 app_prefix = 'al'
 DEFAULT_OPTS = 'window=1m'
 
+# inputs
 main_menu = make_main_menu(app_prefix)
 inputs_host = make_inputs_host(app_prefix)
 inputs_hours_ago = make_inputs_generic(
@@ -29,6 +31,8 @@ inputs_last_n = make_inputs_generic(
 )
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
 inputs = make_inputs([(inputs_host, 3), (inputs_hours_ago, 2), (inputs_last_n, 2), (inputs_opts, 3), (html.Div(''), 2)])
+
+# layout
 tabs = dbc.Tabs(
     [
         dbc.Tab(label='Alarm Itemsets', tab_id='al-tab-alarm-itemsets'),

@@ -11,7 +11,7 @@ from sklearn.cluster import AgglomerativeClustering
 
 from app import app
 from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, empty_fig
+from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.utils import process_opts
 
 DEFAULT_OPTS = 'freq=30s,w=1200'
@@ -104,7 +104,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1
     w = int(opts.get('w', w))
 
     if n_clicks == 0:
-        figs.append(html.Div(dcc.Graph(id='cp-fig', figure=empty_fig)))
+        figs.append(html.Div(dcc.Graph(id='cp-fig', figure=make_empty_fig())))
         return figs
 
     else:

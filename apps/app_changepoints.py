@@ -8,7 +8,7 @@ from netdata_pandas.data import get_data
 
 from app import app
 from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, empty_fig
+from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.utils import process_opts
 from .changepoint.core import get_changepoints
 from .plots.lines import plot_lines
@@ -105,7 +105,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', smooth_n=5,
     diff_min = float(opts.get('diff_min', diff_min))
 
     if n_clicks == 0:
-        figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=empty_fig)))
+        figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=make_empty_fig())))
         return figs
 
     else:

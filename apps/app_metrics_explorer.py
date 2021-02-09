@@ -10,7 +10,11 @@ from datetime import datetime, timedelta
 
 from app import app
 from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, empty_fig
+from .utils.defaults import DEFAULT_STYLE, make_empty_fig
+from .utils.inputs import (
+    make_main_menu, make_inputs_host, make_inputs_metrics, make_inputs_after, make_inputs_before,
+    make_inputs_opts, make_inputs
+)
 from .utils.utils import process_opts
 from .plots.lines import plot_lines, plot_lines_grid
 from .plots.scatter import plot_scatters
@@ -18,64 +22,24 @@ from .plots.hists import plot_hists
 from .data.core import normalize_df, smooth_df
 from .help_popup.metrics_explorer import help, toggle_help
 
+# defaults
+app_prefix = 'me'
 DEFAULT_OPTS = 'smooth_n=5'
 #DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.load|load1'
 DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
+# inputs
+main_menu = make_main_menu(app_prefix)
+inputs_host = make_inputs_host(app_prefix)
+inputs_metrics = make_inputs_metrics(app_prefix, DEFAULT_METRICS)
+inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
+inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
+inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
+inputs = make_inputs(inputs_host, inputs_metrics, inputs_after, inputs_before, inputs_opts)
 
-main_menu = dbc.Col(dbc.ButtonGroup(
-    [
-        dbc.Button('Home', href='/'),
-        dbc.Button("Help", id="me-help-open"),
-        dbc.Button('Run', id='me-btn-run', n_clicks=0),
-    ]
-))
-inputs_host = dbc.FormGroup(
-    [
-        dbc.Label('host', id='me-label-host', html_for='me-input-host', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-host', value='london.my-netdata.io', type='text', placeholder='host'),
-        dbc.Tooltip('Host you would like to pull data from.', target='me-label-host')
-    ]
-)
-inputs_metrics = dbc.FormGroup(
-    [
-        dbc.Label('metrics', id='me-label-metrics', html_for='me-input-metrics', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-metrics', value=DEFAULT_METRICS, type='text', placeholder=DEFAULT_METRICS),
-        dbc.Tooltip('Metrics to explore.', target='me-label-metrics')
-    ]
-)
-inputs_after = dbc.FormGroup(
-    [
-        dbc.Label('after', id='me-label-after', html_for='me-input-after', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-after', value=DEFAULT_AFTER, type='datetime-local'),
-        dbc.Tooltip('"after" as per netdata rest api.', target='me-label-after')
-    ]
-)
-inputs_before = dbc.FormGroup(
-    [
-        dbc.Label('before', id='me-label-before', html_for='me-input-before', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-before', value=DEFAULT_BEFORE, type='datetime-local'),
-        dbc.Tooltip('"before" as per netdata rest api.', target='me-label-before')
-    ]
-)
-inputs_opts = dbc.FormGroup(
-    [
-        dbc.Label('options', id='me-label-opts', html_for='me-input-opts', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='me-input-opts', value=DEFAULT_OPTS, type='text', placeholder=DEFAULT_OPTS),
-        dbc.Tooltip('List of optional key values to pass to underlying code.', target='me-label-opts')
-    ]
-)
-inputs = dbc.Row(
-    [
-        dbc.Col(inputs_host, width=3),
-        dbc.Col(inputs_metrics, width=3),
-        dbc.Col(inputs_after, width=3),
-        dbc.Col(inputs_before, width=3),
-        dbc.Col(inputs_opts, width=6),
-    ], style={'margin': '0px', 'padding': '0px'}
-)
+# layout
 tabs = dbc.Tabs(
     [
         dbc.Tab(label='Lines', tab_id='me-tab-ts-plots'),
@@ -135,7 +99,7 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
     before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
 
     if n_clicks == 0:
-        figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=empty_fig)))
+        figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=make_empty_fig())))
         return figs
 
     if recalculate:

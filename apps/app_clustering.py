@@ -8,7 +8,7 @@ import dash_bootstrap_components as dbc
 
 from app import app
 from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, empty_fig, make_empty_fig
+from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.utils import process_opts
 from .clustering.core import Clusterer
 from .plots.lines import plot_lines, plot_lines_grid
@@ -120,7 +120,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
     figs = []
 
     if n_clicks == 0:
-        figs.append(html.Div(dcc.Graph(id='cl-fig-changepoint', figure=empty_fig)))
+        figs.append(html.Div(dcc.Graph(id='cl-fig-changepoint', figure=make_empty_fig())))
         return figs
 
     # only do expensive work if needed

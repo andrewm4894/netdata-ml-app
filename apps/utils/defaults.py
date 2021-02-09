@@ -2,7 +2,7 @@
 DEFAULT_STYLE = {"margin": "4px", "padding": "4px"}
 
 
-def make_empty_fig(msg=''):
+def make_empty_fig(msg="Enter inputs and press 'Run'"):
     empty_fig = {
         "layout": {
             "xaxis": {
@@ -25,26 +25,3 @@ def make_empty_fig(msg=''):
         }
     }
     return empty_fig
-
-
-empty_fig = {
-    "layout": {
-        "xaxis": {
-            "visible": False
-        },
-        "yaxis": {
-            "visible": False
-        },
-        "annotations": [
-            {
-                "text": "Enter inputs and press 'Run'",
-                "xref": "paper",
-                "yref": "paper",
-                "showarrow": False,
-                "font": {
-                    "size": 28
-                }
-            }
-        ]
-    }
-}

@@ -1,0 +1,4 @@
+hosts:
+  - 'london.my-netdata.io'
+  - 'newyork.my-netdata.io'
+  - 'bangalore.my-netdata.io'

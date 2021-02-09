@@ -8,7 +8,7 @@ import dash_bootstrap_components as dbc
 
 from app import app
 from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, empty_fig, make_empty_fig
+from .utils.defaults import DEFAULT_STYLE, make_empty_fig, make_empty_fig
 from .utils.utils import process_opts
 from .alarms_affinity.core import process_basket, make_baskets, make_table, itemsets_tooltips, rules_tooltips
 from .help_popup.alarms_affinity import help, toggle_help
@@ -112,7 +112,7 @@ def run(n_clicks, tab, host, hours_ago, last_n, opts='', window='1m', max_n=500,
     window = opts.get('window', window)
 
     if n_clicks == 0:
-        figs.append(html.Div(dcc.Graph(id='al-fig-empty', figure=empty_fig)))
+        figs.append(html.Div(dcc.Graph(id='al-fig-empty', figure=make_empty_fig())))
         return figs
 
     else:

@@ -9,7 +9,7 @@ import dash_bootstrap_components as dbc
 from app import app
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, make_empty_fig
-from .utils.inputs import make_main_menu, make_inputs_host, make_inputs_opts, make_inputs_generic
+from .utils.inputs import make_main_menu, make_inputs_host, make_inputs_opts, make_inputs_generic, make_inputs
 from .utils.utils import process_opts
 from .alarms_affinity.core import process_basket, make_baskets, make_table, itemsets_tooltips, rules_tooltips
 from .help_popup.alarms_affinity import help, toggle_help
@@ -28,15 +28,7 @@ inputs_last_n = make_inputs_generic(
     tooltip_text='How many recent alarms to include, regardless of when they occurred', label_text='last n'
 )
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = dbc.Row(
-    [
-        dbc.Col(inputs_host, width=3),
-        dbc.Col(inputs_hours_ago, width=2),
-        dbc.Col(inputs_last_n, width=2),
-        dbc.Col(inputs_opts, width=3),
-        dbc.Col(html.Div(''), width=2)
-    ], style={'margin': '0px', 'padding': '0px'}
-)
+inputs = make_inputs([(inputs_host, 3), (inputs_hours_ago, 2), (inputs_last_n, 2), (inputs_opts, 3), (html.Div(''), 2)])
 tabs = dbc.Tabs(
     [
         dbc.Tab(label='Alarm Itemsets', tab_id='al-tab-alarm-itemsets'),

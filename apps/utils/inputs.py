@@ -86,15 +86,9 @@ def make_inputs_opts(prefix, default_opts, tooltip_text='List of optional key va
     return inputs_opts
 
 
-def make_inputs(inputs_host, inputs_metrics, inputs_after, inputs_before, inputs_opts):
+def make_inputs(inputs_list):
     return dbc.Row(
-        [
-            dbc.Col(inputs_host, width=3),
-            dbc.Col(inputs_metrics, width=3),
-            dbc.Col(inputs_after, width=3),
-            dbc.Col(inputs_before, width=3),
-            dbc.Col(inputs_opts, width=6),
-        ], style={'margin': '0px', 'padding': '0px'}
+        [dbc.Col(i[0], width=i[1]) for i in inputs_list], style={'margin': '0px', 'padding': '0px'}
     )
 
 

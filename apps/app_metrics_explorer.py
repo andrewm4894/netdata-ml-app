@@ -13,7 +13,7 @@ from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_metrics, make_inputs_after, make_inputs_before,
-    make_inputs_opts, make_inputs
+    make_inputs_opts, make_inputs, make_tabs, make_figs
 )
 from .utils.utils import process_opts
 from .plots.lines import plot_lines, plot_lines_grid
@@ -40,23 +40,8 @@ inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
 inputs = make_inputs([(inputs_host, 3), (inputs_metrics, 3), (inputs_after, 3), (inputs_before, 3), (inputs_opts, 6)])
 
 # layout
-tabs = dbc.Tabs(
-    [
-        dbc.Tab(label='Lines', tab_id='me-tab-ts-plots'),
-        dbc.Tab(label='Scatters', tab_id='me-tab-scatter-plots'),
-        dbc.Tab(label='Histograms', tab_id='me-tab-hist-plots'),
-    ], id='me-tabs', active_tab='me-tab-ts-plots', style={'margin': '12px', 'padding': '2px'}
-)
-layout = html.Div(
-    [
-        logo,
-        main_menu,
-        help,
-        inputs,
-        tabs,
-        dbc.Spinner(children=[html.Div(children=html.Div(id='me-figs'))]),
-    ], style=DEFAULT_STYLE
-)
+tabs = make_tabs(app_prefix, [('Lines', 'ts-plots'), ('Scatter', 'scatter-plots'), ('Histograms', 'hist-plots')])
+layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
 @app.callback(
@@ -99,7 +84,7 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
     before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
 
     if n_clicks == 0:
-        figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=make_empty_fig())))
+        figs.append(html.Div(dcc.Graph(id='me-fig-empty', figure=make_empty_fig())))
         return figs
 
     if recalculate:

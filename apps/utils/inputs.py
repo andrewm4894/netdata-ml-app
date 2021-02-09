@@ -1,5 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
+import dash_html_components as html
 
 from apps.config.config import get_config
 
@@ -47,6 +48,19 @@ def make_inputs_metrics(prefix, default_metrics, tooltip_text='Metrics to explor
         ]
     )
     return inputs_metrics
+
+
+def make_inputs_charts_regex(prefix, default_charts_regex, tooltip_text='Regex for charts to pull.', label_text='charts regex'):
+    inputs_charts_regex = dbc.FormGroup(
+        [
+            dbc.Label(label_text, id=f'{prefix}-label-charts-regex', html_for=f'{prefix}-input-charts-regex',
+                      style={'margin': '4px', 'padding': '0px'}),
+            dbc.Input(id=f'{prefix}-input-charts-regex', value=default_charts_regex, type='text',
+                      placeholder=default_charts_regex),
+            dbc.Tooltip(tooltip_text, target=f'{prefix}-label-charts-regex')
+        ]
+    )
+    return inputs_charts_regex
 
 
 def make_inputs_after(prefix, default_after, tooltip_text='"after" as per netdata rest api.', label_text='after'):
@@ -102,4 +116,18 @@ def make_inputs_generic(prefix, suffix, input_type, default_value, tooltip_text,
         ]
     )
     return inputs_generic
+
+
+def make_tabs(prefix, tab_list, active_tab_num=0):
+    tabs = dbc.Tabs(
+        [dbc.Tab(label=t[0], tab_id=f'{prefix}-tab-{t[1]}') for t in tab_list],
+        id=f'{prefix}-tabs', active_tab=f'{prefix}-tab-{tab_list[active_tab_num][1]}',
+        style={'margin': '12px', 'padding': '2px'}
+    )
+    return tabs
+
+
+def make_figs(id):
+    figs = dbc.Spinner(children=[html.Div(children=html.Div(id=id))])
+    return figs
 

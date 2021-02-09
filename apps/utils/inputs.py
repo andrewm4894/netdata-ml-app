@@ -97,3 +97,15 @@ def make_inputs(inputs_host, inputs_metrics, inputs_after, inputs_before, inputs
         ], style={'margin': '0px', 'padding': '0px'}
     )
 
+
+def make_inputs_generic(prefix, suffix, input_type, default_value, tooltip_text, label_text):
+    inputs_generic = dbc.FormGroup(
+        [
+            dbc.Label(label_text, id=f'{prefix}-label-{suffix}', html_for=f'{prefix}-input-{suffix}',
+                      style={'margin': '4px', 'padding': '0px'}),
+            dbc.Input(id=f'{prefix}-input-{suffix}', value=default_value, type=input_type, placeholder=default_value),
+            dbc.Tooltip(tooltip_text, target=f'{prefix}-label-{suffix}')
+        ]
+    )
+    return inputs_generic
+

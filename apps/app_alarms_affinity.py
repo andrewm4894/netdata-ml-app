@@ -8,48 +8,26 @@ import dash_bootstrap_components as dbc
 
 from app import app
 from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, make_empty_fig, make_empty_fig
+from .utils.defaults import DEFAULT_STYLE, make_empty_fig
+from .utils.inputs import make_main_menu, make_inputs_host, make_inputs_opts, make_inputs_generic
 from .utils.utils import process_opts
 from .alarms_affinity.core import process_basket, make_baskets, make_table, itemsets_tooltips, rules_tooltips
 from .help_popup.alarms_affinity import help, toggle_help
 
+app_prefix = 'al'
 DEFAULT_OPTS = 'window=1m'
 
-main_menu = dbc.Col(dbc.ButtonGroup(
-    [
-        dbc.Button('Home', href='/'),
-        dbc.Button("Help", id="al-help-open"),
-        dbc.Button('Run', id='al-btn-run', n_clicks=0),
-    ]
-))
-inputs_host = dbc.FormGroup(
-    [
-        dbc.Label('host', id='al-label-host', html_for='al-input-host', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='al-input-host', value='london.my-netdata.io', type='text', placeholder='host'),
-        dbc.Tooltip('Host you would like to pull data from.', target='al-label-host')
-    ]
+main_menu = make_main_menu(app_prefix)
+inputs_host = make_inputs_host(app_prefix)
+inputs_hours_ago = make_inputs_generic(
+    app_prefix, 'hours-ago', 'text', None,
+    tooltip_text='How many recent hours of alarms to include.', label_text='hours ago'
 )
-inputs_hours_ago = dbc.FormGroup(
-    [
-        dbc.Label('hours ago', id='al-label-hours-ago', html_for='al-input-hours-ago', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='al-input-hours-ago', value=None, type='number', placeholder=None),
-        dbc.Tooltip('How many recent hours of alarms to include.', target='al-label-hours-ago')
-    ]
+inputs_last_n = make_inputs_generic(
+    app_prefix, 'last-n', 'number', 100,
+    tooltip_text='How many recent alarms to include, regardless of when they occurred', label_text='last n'
 )
-inputs_last_n = dbc.FormGroup(
-    [
-        dbc.Label('last n', id='al-label-last-n', html_for='al-input-last-n', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='al-input-last-n', value=100, type='number', placeholder=100),
-        dbc.Tooltip('How many recent alarms to include, regardless of when they occurred', target='al-label-last-n')
-    ]
-)
-inputs_opts = dbc.FormGroup(
-    [
-        dbc.Label('options', id='al-label-opts', html_for='al-input-opts', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='al-input-opts', value=DEFAULT_OPTS, type='text', placeholder=DEFAULT_OPTS),
-        dbc.Tooltip('list of key values to pass to underlying code.', target='al-label-opts')
-    ]
-)
+inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
 inputs = dbc.Row(
     [
         dbc.Col(inputs_host, width=3),

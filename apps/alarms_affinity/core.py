@@ -45,27 +45,6 @@ def make_baskets(host, hours_ago, last_n, window, max_n):
     return alarm_dataset, chart_dataset, when_min, when_max
 
 
-def make_table(df, id, tooltip_header):
-    table = dash_table.DataTable(
-        id=id,
-        columns=[{"name": i, "id": i} for i in df.columns],
-        data=df.to_dict('records'),
-        style_cell={'textAlign': 'left', 'padding': '5px'},
-        style_as_list_view=True,
-        style_header={
-            'fontWeight': 'bold'
-        },
-        style_data_conditional=[
-            {
-                'if': {'row_index': 'odd'},
-                'backgroundColor': 'rgb(248, 248, 248)'
-            }
-        ],
-        tooltip_header=tooltip_header,
-    )
-    return table
-
-
 def process_basket(dataset, min_support, min_threshold):
     te = TransactionEncoder()
     te_ary = te.fit(dataset).transform(dataset)

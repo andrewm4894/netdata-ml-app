@@ -6,11 +6,12 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
 import plotly.graph_objects as go
-from netdata_pandas.data import get_data
 from datetime import datetime, timedelta
 import numpy as np
 
 from app import app
+from .data.core import make_table
+from .correlations.core import get_df_corr, make_df_corr_long
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.inputs import (
@@ -37,7 +38,14 @@ inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
 inputs = make_inputs([(inputs_host, 3), (inputs_charts_regex, 3), (inputs_after, 3), (inputs_before, 3), (inputs_opts, 6)])
 
 # layout
-tabs = make_tabs(app_prefix, [('Correlation Heatmap', 'correlation-heatmap'), ('Correlation Bar Plot', 'correlation-bar')])
+tabs = make_tabs(
+    app_prefix,
+    [
+        ('Correlation Heatmap', 'correlation-heatmap'),
+        ('Correlation Bar Plot', 'correlation-bar'),
+        ('Correlation Changes', 'correlation-changes')
+    ],
+)
 layout = html.Div([logo, main_menu, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
@@ -55,7 +63,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
-    global df
+    global df, df_corr_long, df_ref_corr, df_ref_corr_long, df_corr_changes
     ctx = dash.callback_context
     inputs_current, states_current = ctx.inputs, ctx.states
     was_button_clicked, has_state_changed, is_initial_run = False, False, True
@@ -81,13 +89,25 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1
     if recalculate:
 
         # get data
-        after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
-        before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
-        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
-        # lets resample to a specific frequency
-        df = df.resample(freq).mean()
-        # get correlations
-        df = df.corr().dropna(axis=0, how='all').dropna(axis=1, how='all')
+        df = get_df_corr(
+            hosts=[host],
+            charts_regex=charts_regex,
+            after=int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp()),
+            before=int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp()),
+            index_as_datetime=True, freq=freq
+        )
+        df_corr_long = make_df_corr_long(df)
+        window = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp()) - int(
+            datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
+        after_ref = int((datetime.strptime(after, '%Y-%m-%dT%H:%M') - timedelta(seconds=window)).timestamp())
+        before_ref = int((datetime.strptime(before, '%Y-%m-%dT%H:%M') - timedelta(seconds=window)).timestamp())
+        df_ref_corr = get_df_corr([host], charts_regex, after_ref, before_ref, True, freq)
+        df_ref_corr_long = make_df_corr_long(df_ref_corr)
+
+        df_corr_changes = df_corr_long.merge(df_ref_corr_long, on='Dimension Pair', suffixes=('', ' Previous'))
+        df_corr_changes['Diff'] = df_corr_changes['Correlation Previous'] - df_corr_changes['Correlation']
+        df_corr_changes['Diff Abs'] = abs(df_corr_changes['Diff'])
+        df_corr_changes = round(df_corr_changes.sort_values('Diff Abs', ascending=False), 2)
 
     if tab == f'{app_prefix}-tab-correlation-heatmap':
 
@@ -100,19 +120,10 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1
 
     elif tab == f'{app_prefix}-tab-correlation-bar':
 
-        df_corr_long = df.reset_index().melt('index')
-        df_corr_long.columns = ['Dim A', 'Dim B', 'Correlation']
-        df_corr_long['Pair'] = df_corr_long.apply(lambda x: str(set([x['Dim A'], x['Dim B']])), axis=1)
-        df_corr_long['Correlation Abs'] = round(abs(df_corr_long['Correlation']), 2)
-        df_corr_long['Pos or Neg'] = np.where(df_corr_long['Correlation'] > 0, '+', '-')
-        df_corr_long = df_corr_long[df_corr_long['Correlation'].notna()].sort_values('Correlation Abs')
-        df_corr_long = df_corr_long[df_corr_long['Dim A'] != df_corr_long['Dim B']]
-        df_corr_long = df_corr_long[['Pair', 'Correlation', 'Correlation Abs', 'Pos or Neg']].drop_duplicates()
-
         fig = go.Figure(go.Bar(
             x=df_corr_long['Correlation Abs'],
-            y=df_corr_long['Pair'],
-            marker_color=np.where(df_corr_long['Pos or Neg'] == '+', 'Green', 'Red'),
+            y=df_corr_long['Dimension Pair'],
+            marker_color=np.where(df_corr_long['Pos or Neg'] == '+', 'forestgreen', 'red'),
             text=df_corr_long['Correlation Abs'],
             textposition='auto',
             orientation='h'))
@@ -122,6 +133,33 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1
             height=len(df_corr_long) * 25
         )
         figs.append(html.Div(dcc.Graph(id='cor-bar-fig', figure=fig)))
+
+    elif tab == f'{app_prefix}-tab-correlation-changes':
+
+        fig = go.Figure(
+            data=go.Scatter(
+                x=df_corr_changes['Correlation Previous'],
+                y=df_corr_changes['Correlation'],
+                mode='markers',
+                text=df_corr_changes['Dimension Pair'],
+                marker=dict(
+                    size=10,
+                    color=df_corr_changes['Diff Abs'],
+                    colorscale='Viridis',
+                    showscale=True
+                )
+            )
+        )
+        fig.update_layout(
+            template='simple_white',
+            xaxis_title="Correlation Previous",
+            yaxis_title="Correlation",
+            legend_title="Correlation Abs Diff",
+        )
+        figs.append(html.Div(dcc.Graph(id='cor-fig', figure=fig)))
+
+        fig = make_table(df_corr_changes[['Dimension Pair', 'Correlation Previous', 'Correlation', 'Diff']], f'{app_prefix}-tbl-data')
+        figs.append(html.Div(children=[fig], style={"margin": "6px", "padding": "6px"}))
 
     states_previous = states_current
     inputs_previous = inputs_current

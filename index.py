@@ -8,7 +8,7 @@ from app import app
 from apps import (
     app_home, app_clustering, app_heatmap, app_percentiles,
     app_alarms_affinity, app_changepoints, app_metrics_explorer,
-    help_metrics_explorer, app_correlations
+    help_metrics_explorer, app_correlations, app_anomalies
 )
 
 server = app.server
@@ -37,6 +37,8 @@ def display_page(pathname):
         return help_metrics_explorer.layout
     elif pathname == '/correlations':
         return app_correlations.layout
+    elif pathname == '/anomalies':
+        return app_anomalies.layout
     elif pathname == '/':
         return app_home.layout
     else:

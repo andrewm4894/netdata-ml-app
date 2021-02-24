@@ -8,4 +8,8 @@ print(app_config)
 
 #%%
 
+from netdata_pandas.data import get_data
+
+df = get_data(freq='10s')
+
 #%%

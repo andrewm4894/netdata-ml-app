@@ -16,7 +16,8 @@ button_percentiles = dbc.Button(dcc.Markdown('**Metric Percentiles** - Add perce
 button_alarms_affinity = dbc.Button(dcc.Markdown('**Alarms Affinity** - Explore which alarms co-occur'), href='/alarms-affinity', outline=button_outline, style=button_style)
 button_changepoints = dbc.Button(dcc.Markdown('**Changepoint Detection** - Detect "shifts" in metrics'), href='/changepoints', outline=button_outline, style=button_style)
 button_metrics_explorer = dbc.Button(dcc.Markdown('**Metrics Explorer** - Explore some metrics'), href='/metrics-explorer', outline=button_outline, style=button_style)
-button_correlations = dbc.Button(dcc.Markdown('**Correlations** - Explore correlations'), href='/correlations', outline=button_outline, style=button_style)
+button_correlations = dbc.Button(dcc.Markdown('**Correlations** - Explore correlations across metrics'), href='/correlations', outline=button_outline, style=button_style)
+button_anomalies = dbc.Button(dcc.Markdown('**Anomalies** - Anomaly detection using PyOD'), href='/anomalies', outline=button_outline, style=button_style)
 button_div_style = dict(marginLeft='15px')
 
 # make layout
@@ -30,5 +31,6 @@ layout = html.Div(
         html.Div(button_percentiles, style=button_div_style),
         html.Div(button_alarms_affinity, style=button_div_style),
         html.Div(button_correlations, style=button_div_style),
+        html.Div(button_anomalies, style=button_div_style),
     ], style=DEFAULT_STYLE
 )

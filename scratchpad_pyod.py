@@ -3,9 +3,10 @@
 #%%
 
 from netdata_pandas.data import get_data
-from am4894plots.plots import plot_lines, plot_lines_grid
+from am4894plots.plots import plot_lines, plot_lines_grid, plot_heatmap
 import time
 from pyod.models.hbos import HBOS
+from pyod.models.pca import PCA
 import numpy as np
 import pandas as pd
 from datetime import timedelta
@@ -35,10 +36,10 @@ def make_features_np(arr, lags_n, diffs_n, smooth_n, colnames):
 
     return colnames, arr
 
-#%%
+##%%
 
 # inputs
-hosts = ['34.75.17.189:19999']
+hosts = ['london.my-netdata.io']
 #charts_regex = '.*'
 charts_regex = 'system.*'
 #charts_regex = '^(?!.*uptime).*$'
@@ -48,7 +49,7 @@ smooth_n = 3
 diffs_n = 1
 lags_n = 3
 
-#%%
+##%%
 
 # get the data
 df = get_data(hosts=hosts, charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
@@ -56,9 +57,9 @@ df = df[[col for col in df.columns if 'uptime' not in col]]
 print(df.shape)
 #df.head()
 
-#%%
+##%%
 
-ref_timedelta = timedelta(hours=12)
+ref_timedelta = timedelta(hours=4)
 
 # work out reference window
 ref_before = int(df.index.min().timestamp())
@@ -67,20 +68,21 @@ ref_after = int((df.index.min() - ref_timedelta).timestamp())
 # get the reference data
 df_ref = get_data(hosts=hosts, charts_regex=charts_regex, after=ref_after, before=ref_before,
                   index_as_datetime=True)
+print(df_ref.shape)
 
-#%%
+##%%
 
 arr = df.values
 colnames = list(df.columns)
 colnames, arr = make_features_np(arr, lags_n, diffs_n, smooth_n, colnames)
-df_features = pd.DataFrame(arr, columns=colnames)
+df_features = pd.DataFrame(arr, columns=colnames).ffill().bfill()
 
 arr_ref = df_ref.values
 colnames_ref = list(df_ref.columns)
 colnames_ref, arr_ref = make_features_np(arr_ref, lags_n, diffs_n, smooth_n, colnames_ref)
-df_features_ref = pd.DataFrame(arr_ref, columns=colnames_ref)
+df_features_ref = pd.DataFrame(arr_ref, columns=colnames_ref).ffill().bfill()
 
-#%%
+##%%
 
 charts = list(set([col.split('|')[0] for col in df.columns]))
 preds = {}
@@ -88,25 +90,55 @@ probs = {}
 
 for chart in charts:
     chart_cols = [col for col in df_features.columns if col.startswith(f'{chart}|')]
-    model = HBOS(contamination=0.01)
+    model = PCA(contamination=0.01)
     X_ref = df_features_ref[chart_cols].values
     X = df_features[chart_cols].values
-    model.fit(X_ref)
-    preds[chart] = model.predict(X)
-    probs[chart] = model.predict_proba(X)[:, 1].tolist()
+    try:
+        model.fit(X_ref)
+        preds[chart] = model.predict(X)
+        probs[chart] = model.predict_proba(X)[:, 1].tolist()
+    except:
+        print(f'{chart} defaulting to HBOS')
+        model = HBOS(contamination=0.01)
+        model.fit(X_ref)
+        preds[chart] = model.predict(X)
+        probs[chart] = model.predict_proba(X)[:, 1].tolist()
+
 
 df_preds = pd.DataFrame.from_dict(preds, orient='columns')
 df_probs = pd.DataFrame.from_dict(probs, orient='columns')
 
+##%%
+
+df_preds['time'] = df.tail(len(df_preds)).index
+df_preds = df_preds.set_index('time')
+df_probs['time'] = df.tail(len(df_probs)).index
+df_probs = df_probs.set_index('time')
+
+##%%
+
+plot_lines_grid(df_probs, h=1200, yaxes_visible=False, xaxes_visible=False, subplot_titles=['' for i in range(len(df_probs.columns))])
+plot_lines_grid(df_preds, h=1200, yaxes_visible=False, xaxes_visible=False, subplot_titles=['' for i in range(len(df_preds.columns))])
+#plot_heatmap(df_preds)
+#plot_heatmap(df_probs)
+
 #%%
 
-df_preds.mean()
+list(df_preds.sum().sort_values(ascending=False).index)
+
+#%%
+
+#%%
+
+xxx
+
+#df_preds.mean()
 #df_probs.mean()
 
 #%%
 
 
-df_norm = ((df-df.min())/(df.max()-df.min()))
+#df_norm = ((df-df.min())/(df.max()-df.min()))
 #df_norm = df_norm.dropna(how='all', axis=1)
 #df_norm = df_norm.dropna(how='all', axis=0)
 

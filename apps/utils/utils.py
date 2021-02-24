@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+from datetime import timedelta
 
 
 def process_opts(opts):
@@ -25,3 +26,20 @@ def get_cols_like(df: pd.DataFrame, cols_like: list) -> list:
         cols.extend(matched_cols)
     cols = list(set(cols))
     return cols
+
+
+def get_reference_timedelta(ref):
+    if 'h' in ref:
+        ref_timedelta = timedelta(hours=int(ref.replace('h', '')))
+    elif 'm' in ref:
+        ref_timedelta = timedelta(minutes=int(ref.replace('m', '')))
+    else:
+        ref_timedelta = timedelta(hours=1)
+
+    return ref_timedelta
+
+
+def get_ref_windows(ref_timedelta, df):
+    ref_before = int(df.index.min().timestamp())
+    ref_after = int((df.index.min() - ref_timedelta).timestamp())
+    return ref_before, ref_after

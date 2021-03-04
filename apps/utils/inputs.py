@@ -2,6 +2,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 
+from app import app
 from apps.config.config import get_config
 
 app_config_found, app_config = get_config()
@@ -131,3 +132,13 @@ def make_figs(id):
     figs = dbc.Spinner(children=[html.Div(children=html.Div(id=id))])
     return figs
 
+
+def make_card(button, text, logo):
+    card = dbc.Card(
+        [
+            dbc.CardImg(src=app.get_asset_url(logo), top=True),
+            dbc.CardBody([button, dcc.Markdown(text, style={"margin": "4px", "padding": "0px"})]),
+        ],
+        style={"margin": "4px", "padding": "4px"}
+    )
+    return card

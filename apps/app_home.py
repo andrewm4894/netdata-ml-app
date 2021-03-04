@@ -3,34 +3,67 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
+from app import app
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE
+from .utils.inputs import make_card
 
-
-# create buttons
-button_style = dict(width='500px', textAlign='center', height='40px')
-button_outline = True
-button_clustering = dbc.Button(dcc.Markdown('**Time Series Clustering** - Find metrics that move together'), href='/clustering', outline=button_outline, style=button_style)
-button_heatmap = dbc.Button(dcc.Markdown('**Clustered Heatmap** - We all love heatmaps!'), href='/heatmap', outline=button_outline, style=button_style)
-button_percentiles = dbc.Button(dcc.Markdown('**Metric Percentiles** - Add percentile lines to charts'), href='/percentiles', outline=button_outline, style=button_style)
-button_alarms_affinity = dbc.Button(dcc.Markdown('**Alarms Affinity** - Explore which alarms co-occur'), href='/alarms-affinity', outline=button_outline, style=button_style)
-button_changepoints = dbc.Button(dcc.Markdown('**Changepoint Detection** - Detect "shifts" in metrics'), href='/changepoints', outline=button_outline, style=button_style)
-button_metrics_explorer = dbc.Button(dcc.Markdown('**Metrics Explorer** - Explore some metrics'), href='/metrics-explorer', outline=button_outline, style=button_style)
-button_correlations = dbc.Button(dcc.Markdown('**Correlations** - Explore correlations across metrics'), href='/correlations', outline=button_outline, style=button_style)
-button_anomalies = dbc.Button(dcc.Markdown('**Anomalies** - Anomaly detection using PyOD'), href='/anomalies', outline=button_outline, style=button_style)
-button_div_style = dict(marginLeft='15px')
+# cards
+card_metrics_explorer = make_card(
+    dbc.Button(dcc.Markdown('Metrics Explorer'), href='/metrics-explorer', style={'height': '40px'}),
+    'Explore some metrics',
+    'metrics_explorer_logo.png'
+)
+card_changepoints = make_card(
+    dbc.Button(dcc.Markdown('Changepoint Detection'), href='/changepoints', style={'height': '40px'}),
+    'Detect "shifts" in metrics',
+    'changepoint_detection_logo.png'
+)
+card_heatmap = make_card(
+    dbc.Button(dcc.Markdown('Clustered Heatmap'), href='/heatmap', style={'height': '40px'}),
+    'We all love heatmaps!',
+    'heatmap_logo.png'
+)
+card_percentiles = make_card(
+    dbc.Button(dcc.Markdown('Metric Percentiles'), href='/percentiles', style={'height': '40px'}),
+    'Add percentile lines to charts',
+    'percentiles_logo.png'
+)
+card_alarms_affinity = make_card(
+    dbc.Button(dcc.Markdown('Alarms Affinity'), href='/alarms-affinity', style={'height': '40px'}),
+    'Explore which alarms co-occur',
+    'alarms_affinity_logo.png'
+)
+card_clustering = make_card(
+    dbc.Button(dcc.Markdown('Time Series Clustering'), href='/clustering', style={'height': '40px'}),
+    'Find metrics that move together',
+    'clustering_logo.png'
+)
+card_correlations = make_card(
+    dbc.Button(dcc.Markdown('Correlations'), href='/correlations', style={'height': '40px'}),
+    'Explore correlations across metrics',
+    'correlation_logo.png'
+)
+card_anomalies = make_card(
+    dbc.Button(dcc.Markdown('Anomalies'), href='/anomalies', style={'height': '40px'}),
+    'Anomaly detection using PyOD',
+    'anomalies_logo.png'
+)
+cards = dbc.CardColumns([
+    card_metrics_explorer,
+    card_changepoints,
+    card_heatmap,
+    card_percentiles,
+    card_alarms_affinity,
+    card_clustering,
+    card_correlations,
+    card_anomalies
+], style=DEFAULT_STYLE)
 
 # make layout
 layout = html.Div(
     [
         logo,
-        html.Div(button_metrics_explorer, style=button_div_style),
-        html.Div(button_changepoints, style=button_div_style),
-        html.Div(button_clustering, style=button_div_style),
-        html.Div(button_heatmap, style=button_div_style),
-        html.Div(button_percentiles, style=button_div_style),
-        html.Div(button_alarms_affinity, style=button_div_style),
-        html.Div(button_correlations, style=button_div_style),
-        html.Div(button_anomalies, style=button_div_style),
+        cards,
     ], style=DEFAULT_STYLE
 )

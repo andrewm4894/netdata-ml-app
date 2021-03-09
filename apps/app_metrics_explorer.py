@@ -37,7 +37,7 @@ inputs_metrics = make_inputs_metrics(app_prefix, DEFAULT_METRICS)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 3), (inputs_metrics, 3), (inputs_after, 3), (inputs_before, 3), (inputs_opts, 6)])
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_metrics, 6), (inputs_opts, 6)])
 
 # layout
 tabs = make_tabs(app_prefix, [('Lines', 'ts-plots'), ('Scatter', 'scatter-plots'), ('Histograms', 'hist-plots')])

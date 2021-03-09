@@ -28,7 +28,7 @@ def make_inputs_host(prefix):
             dbc.Label('host', id=f'{prefix}-label-host', html_for=f'{prefix}-input-host', style={'margin': '4px', 'padding': '0px'}),
             (
                 dcc.Dropdown(id=f'{prefix}-input-host', placeholder='host', options=DEFAULT_HOSTS_DROPDOWN,
-                             value=DEFAULT_HOSTS_DROPDOWN[0]['value'])
+                             value=DEFAULT_HOSTS_DROPDOWN[0]['value'], optionHeight=60)
                 if app_config_found
                 else
                 dbc.Input(id=f'{prefix}-input-host', value='london.my-netdata.io', type='text', placeholder='host')

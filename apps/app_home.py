@@ -49,6 +49,11 @@ card_anomalies = make_card(
     'Anomaly detection using PyOD',
     'anomalies_logo.png'
 )
+card_mp_anomalies = make_card(
+    dbc.Button(dcc.Markdown('Matrix Profile Anomalies'), href='/mp-anomalies', style={'height': '40px'}),
+    'Anomaly detection using Matrix Profile',
+    'mp_anomalies_logo.png'
+)
 cards = dbc.CardColumns([
     card_metrics_explorer,
     card_changepoints,
@@ -57,7 +62,8 @@ cards = dbc.CardColumns([
     card_alarms_affinity,
     card_clustering,
     card_correlations,
-    card_anomalies
+    card_anomalies,
+    card_mp_anomalies
 ], style=DEFAULT_STYLE)
 
 # make layout

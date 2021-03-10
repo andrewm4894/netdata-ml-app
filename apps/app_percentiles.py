@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
@@ -11,94 +11,45 @@ import plotly.graph_objects as go
 from netdata_pandas.data import get_data
 
 from app import app
+from .utils.inputs import (
+    make_main_menu, make_inputs_host, make_inputs_after, make_inputs_before,
+    make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_charts_regex
+)
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.utils import process_opts
+from .help_popup.percentiles import help, toggle_help
 
+# defaults
+app_prefix = 'pc'
 DEFAULT_OPTS = 'ref=30m'
+DEFAULT_CHARTS_REGEX = 'system.*'
+DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
+DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
-main_menu = dbc.Col(dbc.ButtonGroup(
-    [
-        dbc.Button('Home', href='/'),
-        dbc.Button('Run', id='pc-btn-run', n_clicks=0),
-    ]
-))
-inputs_host = dbc.FormGroup(
-    [
-        dbc.Label('host', id='pc-label-host', html_for='pc-input-host', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='pc-input-host', value='london.my-netdata.io', type='text', placeholder='host'),
-        dbc.Tooltip('Host you would like to pull data from.', target='pc-label-host')
-    ]
-)
-inputs_charts_regex = dbc.FormGroup(
-    [
-        dbc.Label('charts regex', id='pc-label-charts-regex', html_for='pc-input-charts-regex', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='pc-input-charts-regex', value='system.*', type='text', placeholder='system.*'),
-        dbc.Tooltip('Regex for charts to pull.', target='pc-label-charts-regex')
-    ]
-)
-inputs_after = dbc.FormGroup(
-    [
-        dbc.Label('after', id='pc-label-after', html_for='pc-input-after', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='pc-input-after', value=-1800, type='number', placeholder=-1800),
-        dbc.Tooltip('"after" as per netdata rest api.', target='pc-label-after')
-    ]
-)
-inputs_before = dbc.FormGroup(
-    [
-        dbc.Label('before', id='pc-label-before', html_for='pc-input-before', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='pc-input-before', value=0, type='number', placeholder=0),
-        dbc.Tooltip('"before" as per netdata rest api.', target='pc-label-before')
-    ]
-)
-inputs_ref = dbc.FormGroup(
-    [
-        dbc.Label('ref', id='pc-label-ref', html_for='pc-input-ref', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='pc-input-ref', value='4h', type='text', placeholder='4h'),
-        dbc.Tooltip('Reference window to use e.g 4h compares to previous 4 hours.', target='pc-label-ref')
-    ]
-)
-inputs_opts = dbc.FormGroup(
-    [
-        dbc.Label('options', id='pc-label-opts', html_for='pc-input-opts', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='pc-input-opts', value=DEFAULT_OPTS, type='text', placeholder=DEFAULT_OPTS),
-        dbc.Tooltip('list of key values to pass to underlying code.', target='pc-label-opts')
-    ]
-)
-inputs = dbc.Row(
-    [
-        dbc.Col(inputs_host, width=3),
-        dbc.Col(inputs_charts_regex, width=2),
-        dbc.Col(inputs_after, width=2),
-        dbc.Col(inputs_before, width=2),
-        dbc.Col(inputs_opts, width=2),
-    ], style={'margin': '0px', 'padding': '0px'}
-)
-tabs = dbc.Tabs(
-    [
-        dbc.Tab(label='Percentiles', tab_id='pc-tab-percentiles'),
-    ], id='pc-tabs', active_tab='pc-tab-percentiles', style={'margin': '12px', 'padding': '2px'}
-)
-layout = html.Div(
-    [
-        logo,
-        main_menu,
-        inputs,
-        tabs,
-        dbc.Spinner(children=[html.Div(children=html.Div(id='pc-figs'))]),
-    ], style=DEFAULT_STYLE
-)
+# inputs
+main_menu = make_main_menu(app_prefix)
+inputs_host = make_inputs_host(app_prefix)
+inputs_charts_regex = make_inputs_charts_regex(app_prefix, DEFAULT_CHARTS_REGEX)
+inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
+inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
+inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6)])
+
+# layout
+tabs = make_tabs(app_prefix, [('Percentiles', 'percentiles')])
+layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
 @app.callback(
-    Output('pc-figs', 'children'),
-    Input('pc-btn-run', 'n_clicks'),
-    Input('pc-tabs', 'active_tab'),
-    State('pc-input-host', 'value'),
-    State('pc-input-charts-regex', 'value'),
-    State('pc-input-after', 'value'),
-    State('pc-input-before', 'value'),
-    State('pc-input-opts', 'value'),
+    Output(f'{app_prefix}-figs', 'children'),
+    Input(f'{app_prefix}-btn-run', 'n_clicks'),
+    Input(f'{app_prefix}-tabs', 'active_tab'),
+    State(f'{app_prefix}-input-host', 'value'),
+    State(f'{app_prefix}-input-charts-regex', 'value'),
+    State(f'{app_prefix}-input-after', 'value'),
+    State(f'{app_prefix}-input-before', 'value'),
+    State(f'{app_prefix}-input-opts', 'value'),
 )
 def run(n_clicks, tab, host, charts_regex, after, before, opts, ref='1h'):
 
@@ -121,6 +72,8 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, ref='1h'):
             ref_timedelta = timedelta(hours=1)
 
         # get data
+        after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
+        before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
         df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
         df = df[[col for col in df.columns if 'uptime' not in col]]
 

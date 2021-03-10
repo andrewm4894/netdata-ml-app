@@ -1,4 +1,5 @@
 
+from typing import Union
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -109,7 +110,7 @@ def plot_lines_grid(df: pd.DataFrame, cols: list = None, cols_like: list = None,
                     shade_line_width: int = 0, marker_list: list = None, marker_mode: str = "markers",
                     marker_position: str = "bottom center", marker_color: str = 'Red', marker_size: int = 5,
                     marker_symbol: str = 'circle-open', h_each: int = None, legend: bool = True,
-                    yaxes_visible: bool = True, xaxes_visible: bool = True, subplot_titles: list = None,
+                    yaxes_visible: bool = True, xaxes_visible: bool = True, subplot_titles: Union[str, list] = None,
                     subplot_titles_size: int = 12, subplot_titles_x: float = 0.2, subplot_titles_color: str = 'grey',
                     normalize_method: str = None):
     """Plot lines with plotly"""
@@ -128,7 +129,9 @@ def plot_lines_grid(df: pd.DataFrame, cols: list = None, cols_like: list = None,
         x = df[x]
 
     # define subplot titles if needed
-    if not subplot_titles:
+    if subplot_titles == '':
+        subplot_titles = ['' for _ in cols]
+    elif not subplot_titles:
         subplot_titles = cols
 
     # make subplots

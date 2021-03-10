@@ -18,6 +18,7 @@ from .utils.inputs import (
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
 from .utils.utils import process_opts
+from .help_popup.heatmap import help, toggle_help
 
 # defaults
 app_prefix = 'hm'
@@ -34,11 +35,11 @@ inputs_charts_regex = make_inputs_charts_regex(app_prefix, DEFAULT_CHARTS_REGEX)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 3), (inputs_charts_regex, 3), (inputs_after, 3), (inputs_before, 3), (inputs_opts, 6)])
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6)])
 
 # layout
 tabs = make_tabs(app_prefix, [('Clustered Heatmap', 'heatmap-clustered')])
-layout = html.Div([logo, main_menu, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
+layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
 @app.callback(

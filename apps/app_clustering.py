@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, timedelta
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -7,94 +8,47 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
 from app import app
+from .utils.inputs import (
+    make_main_menu, make_inputs_host, make_inputs_after, make_inputs_before,
+    make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_charts_regex
+)
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.utils import process_opts
 from .clustering.core import Clusterer
 from .plots.lines import plot_lines, plot_lines_grid
+from .help_popup.clustering import help, toggle_help
 
-#DEFAULT_OPTS = 'k=20'
-#DEFAULT_CHARTS_REGEX = 'system.*|apps.*|users.*|groups.*'
-#DEFAULT_CHARTS_REGEX = '.*'
+# defaults
+app_prefix = 'cl'
 DEFAULT_OPTS = 'k=8'
 DEFAULT_CHARTS_REGEX = 'system.*'
+DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
+DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
-main_menu = dbc.Col(dbc.ButtonGroup(
-    [
-        dbc.Button('Home', href='/'),
-        dbc.Button('Run', id='cl-btn-run', n_clicks=0),
-    ]
-))
-inputs_host = dbc.FormGroup(
-    [
-        dbc.Label('host', id='cl-label-host', html_for='cl-input-host', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='cl-input-host', value='london.my-netdata.io', type='text', placeholder='host'),
-        dbc.Tooltip('Host you would like to pull data from.', target='cl-label-host')
-    ]
-)
-inputs_charts_regex = dbc.FormGroup(
-    [
-        dbc.Label('charts regex', id='cl-label-charts-regex', html_for='cl-input-charts-regex', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='cl-input-charts-regex', value=DEFAULT_CHARTS_REGEX, type='text', placeholder='system.*'),
-        dbc.Tooltip('Regex for charts to pull.', target='cl-label-charts-regex')
-    ]
-)
-inputs_after = dbc.FormGroup(
-    [
-        dbc.Label('after', id='cl-label-after', html_for='cl-input-after', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='cl-input-after', value=-1800, type='number', placeholder=-1800),
-        dbc.Tooltip('"after" as per netdata rest api.', target='cl-label-after')
-    ]
-)
-inputs_before = dbc.FormGroup(
-    [
-        dbc.Label('before', id='cl-label-before', html_for='cl-input-before', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='cl-input-before', value=0, type='number', placeholder=0),
-        dbc.Tooltip('"before" as per netdata rest api.', target='cl-label-before')
-    ]
-)
-inputs_opts = dbc.FormGroup(
-    [
-        dbc.Label('options', id='cl-label-opts', html_for='cl-input-opts', style={'margin': '4px', 'padding': '0px'}),
-        dbc.Input(id='cl-input-opts', value=DEFAULT_OPTS, type='text', placeholder=DEFAULT_OPTS),
-        dbc.Tooltip('list of key values to pass to underlying code.', target='cl-label-opts')
-    ]
-)
-inputs = dbc.Row(
-    [
-        dbc.Col(inputs_host, width=3),
-        dbc.Col(inputs_charts_regex, width=2),
-        dbc.Col(inputs_after, width=2),
-        dbc.Col(inputs_before, width=2),
-        dbc.Col(inputs_opts, width=2),
-    ], style={'margin': '0px', 'padding': '0px'}
-)
-tabs = dbc.Tabs(
-    [
-        dbc.Tab(label='Cluster Centers', id='cl-id-tab-centers', tab_id='cl-tab-centers'),
-        dbc.Tab(label='Cluster Details', id='cl-id-tab-details', tab_id='cl-tab-details'),
-    ], id='cl-tabs', active_tab='cl-tab-centers', style={'margin': '12px', 'padding': '2px'}
-)
-layout = html.Div(
-    [
-        logo,
-        main_menu,
-        inputs,
-        tabs,
-        dbc.Spinner(children=[html.Div(children=html.Div(id='cl-figs'))]),
-    ], style=DEFAULT_STYLE
-)
+# inputs
+main_menu = make_main_menu(app_prefix)
+inputs_host = make_inputs_host(app_prefix)
+inputs_charts_regex = make_inputs_charts_regex(app_prefix, DEFAULT_CHARTS_REGEX)
+inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
+inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
+inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6)])
+
+# layout
+tabs = make_tabs(app_prefix, [('Cluster Centers', 'centers'), ('Cluster Details', 'details')])
+layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
 @app.callback(
-    Output('cl-figs', 'children'),
-    Input('cl-btn-run', 'n_clicks'),
-    Input('cl-tabs', 'active_tab'),
-    State('cl-input-host', 'value'),
-    State('cl-input-charts-regex', 'value'),
-    State('cl-input-after', 'value'),
-    State('cl-input-before', 'value'),
-    State('cl-input-opts', 'value')
+    Output(f'{app_prefix}-figs', 'children'),
+    Input(f'{app_prefix}-btn-run', 'n_clicks'),
+    Input(f'{app_prefix}-tabs', 'active_tab'),
+    State(f'{app_prefix}-input-host', 'value'),
+    State(f'{app_prefix}-input-charts-regex', 'value'),
+    State(f'{app_prefix}-input-after', 'value'),
+    State(f'{app_prefix}-input-before', 'value'),
+    State(f'{app_prefix}-input-opts', 'value')
 )
 def run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
 

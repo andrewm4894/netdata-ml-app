@@ -6,27 +6,27 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from app import app
 
-app_prefix = 'al'
+app_prefix = 'cp'
 
 help_body = """
 TODO  
-
+  
 ###### TODO  
 todo.  
 """
 
 help = html.Div([
     dbc.Modal([
-        dbc.ModalHeader("Alarms Affinity"),
+        dbc.ModalHeader("Changepoint Detection"),
         dbc.ModalBody(dcc.Markdown(help_body)),
         dbc.ModalFooter(
             dbc.ButtonGroup(
                 [
-                    dbc.Button("More Help!", href="/alarms-affinity-help"),
+                    dbc.Button("More Help!", href="/changepoints-help"),
                     dbc.Button("Close", id=f"{app_prefix}-help-close", className="ml-auto")
                 ]
             )
-        ),
+    ),
     ], id=f"{app_prefix}-modal")]
 )
 

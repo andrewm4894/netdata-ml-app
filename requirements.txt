@@ -12,4 +12,3 @@ ruptures==1.1.2
 PyYAML==5.4.1
 stumpy==1.8.0
 pyod==0.8.7
-

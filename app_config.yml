@@ -1,5 +1,3 @@
 hosts:
   - 'london.my-netdata.io'
   - 'newyork.my-netdata.io'
-  - 'bangalore.my-netdata.io'
-  - '34.75.17.189:19999'

@@ -14,10 +14,10 @@ from datetime import datetime, timedelta
 from netdata_pandas.data import get_data
 from pyod.models.hbos import HBOS
 from pyod.models.pca import PCA
-from am4894plots.plots import plot_lines, plot_lines_grid
 from sklearn.cluster import AgglomerativeClustering
 
 from app import app
+from .plots.lines import plot_lines, plot_lines_grid
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.utils import process_opts

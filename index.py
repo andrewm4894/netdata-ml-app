@@ -10,7 +10,7 @@ from apps import (
     app_alarms_affinity, app_changepoints, app_metrics_explorer,
     app_correlations, app_anomalies, app_mp_anomalies,
     help_metrics_explorer, help_heatmap, help_changepoints, help_percentiles,
-    help_alarms_affinity, help_clustering
+    help_alarms_affinity, help_clustering, help_correlations
 )
 
 server = app.server
@@ -58,6 +58,8 @@ def display_page(pathname):
         return help_alarms_affinity.layout
     elif pathname == '/clustering-help':
         return help_clustering.layout
+    elif pathname == '/correlations-help':
+        return help_correlations.layout
     # 404
     else:
         return '404'

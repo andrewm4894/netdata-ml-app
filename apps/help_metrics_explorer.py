@@ -19,7 +19,7 @@ Explore a specific set of metrics.
 main_menu = dbc.Col(dbc.ButtonGroup(
     [
         dbc.Button('Home', href='/'),
-        dbc.Button("Metrics Explorer", href="/metrics-explorer"),
+        dbc.Button("Back", href="/metrics-explorer"),
     ]
 ))
 layout = html.Div(

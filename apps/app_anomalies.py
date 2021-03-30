@@ -27,6 +27,7 @@ from .utils.inputs import (
 )
 from .utils.utils import process_opts, get_reference_timedelta, get_ref_windows
 from .anomalies.core import make_features
+from .help_popup.anomalies import help, toggle_help
 
 # defaults
 app_prefix = 'ad'
@@ -54,7 +55,7 @@ tabs = make_tabs(
         ('Charts', 'charts'),
     ],
 )
-layout = html.Div([logo, main_menu, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
+layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
 @app.callback(

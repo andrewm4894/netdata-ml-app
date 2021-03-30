@@ -15,7 +15,7 @@ Blah.
 main_menu = dbc.Col(dbc.ButtonGroup(
     [
         dbc.Button('Home', href='/'),
-        dbc.Button("Alarms Affinity", href="/alarms-affinity"),
+        dbc.Button("Back", href="/alarms-affinity"),
     ]
 ))
 layout = html.Div(

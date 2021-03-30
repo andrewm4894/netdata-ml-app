@@ -19,6 +19,7 @@ from .utils.inputs import (
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
 from .utils.utils import process_opts
+from .help_popup.mp_anomalies import help, toggle_help
 
 # defaults
 app_prefix = 'mp'
@@ -39,7 +40,7 @@ inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (
 
 # layout
 tabs = make_tabs(app_prefix, [('Anomalies', 'anomalies')])
-layout = html.Div([logo, main_menu, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
+layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
 @app.callback(

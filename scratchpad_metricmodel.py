@@ -25,8 +25,8 @@ print(df.shape)
 df.head()
 
 # pick a target
-target = 'system.cpu|user'
-#target = np.random.choice(df.columns, 1)[0]
+#target = 'system.cpu|user'
+target = np.random.choice(df.columns, 1)[0]
 print(target)
 target_chart = target.split('|')[0]
 

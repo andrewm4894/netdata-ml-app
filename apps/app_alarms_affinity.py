@@ -13,7 +13,7 @@ from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.inputs import make_main_menu, make_inputs_host, make_inputs_opts, make_inputs_generic, make_inputs
 from .utils.utils import process_opts
 from .alarms_affinity.core import process_basket, make_baskets, itemsets_tooltips, rules_tooltips
-from .help_popup.alarms_affinity import help, toggle_help
+from apps.help.alarms_affinity import help
 
 # defaults
 app_prefix = 'al'

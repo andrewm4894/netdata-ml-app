@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from datetime import timedelta
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
 import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timedelta
 from netdata_pandas.data import get_data
@@ -20,14 +16,13 @@ from app import app
 from .plots.lines import plot_lines, plot_lines_grid
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, make_empty_fig
-from .utils.utils import process_opts
 from .utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_charts_regex, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
 from .utils.utils import process_opts, get_reference_timedelta, get_ref_windows
 from .anomalies.core import make_features
-from .help_popup.anomalies import help, toggle_help
+from apps.help.anomalies import help
 
 # defaults
 app_prefix = 'ad'

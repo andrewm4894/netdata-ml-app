@@ -4,7 +4,6 @@ from datetime import timedelta, datetime
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -18,7 +17,7 @@ from .utils.inputs import (
 from .utils.logo import logo
 from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.utils import process_opts
-from .help_popup.percentiles import help, toggle_help
+from apps.help.percentiles import help
 
 # defaults
 app_prefix = 'pc'

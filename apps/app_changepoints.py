@@ -16,7 +16,7 @@ from .utils.inputs import (
 from .utils.utils import process_opts
 from .changepoint.core import get_changepoints
 from .plots.lines import plot_lines
-from .help_popup.changepoints import help, toggle_help
+from apps.help.changepoints import help
 
 # defaults
 app_prefix = 'cp'

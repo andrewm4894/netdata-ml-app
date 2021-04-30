@@ -19,7 +19,7 @@ from .utils.inputs import (
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
 from .utils.utils import process_opts
-from .help_popup.correlations import help, toggle_help
+from apps.help.correlations import help
 
 # defaults
 app_prefix = 'cor'

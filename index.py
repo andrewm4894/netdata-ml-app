@@ -8,11 +8,10 @@ from app import app
 from apps import (
     app_home, app_clustering, app_heatmap, app_percentiles,
     app_alarms_affinity, app_changepoints, app_metrics_explorer,
-    app_correlations, app_anomalies, app_mp_anomalies, app_metrics_model,
-    help_metrics_explorer, help_heatmap, help_changepoints, help_percentiles,
-    help_alarms_affinity, help_clustering, help_correlations, help_anomalies,
-    help_mp_anomalies, help_metrics_model
+    app_correlations, app_anomalies, app_mp_anomalies, app_metrics_model
 )
+from apps.help import help_metrics_model, help_alarms_affinity, help_anomalies, help_changepoints, help_clustering, \
+    help_correlations, help_heatmap, help_metrics_explorer, help_mp_anomalies, help_percentiles
 
 server = app.server
 app.layout = html.Div([

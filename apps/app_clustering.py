@@ -5,7 +5,6 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
 
 from app import app
 from .utils.inputs import (
@@ -17,7 +16,7 @@ from .utils.defaults import DEFAULT_STYLE, make_empty_fig
 from .utils.utils import process_opts
 from .clustering.core import Clusterer
 from .plots.lines import plot_lines, plot_lines_grid
-from .help_popup.clustering import help, toggle_help
+from apps.help.clustering import help
 
 # defaults
 app_prefix = 'cl'

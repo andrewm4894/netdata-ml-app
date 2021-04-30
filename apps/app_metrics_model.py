@@ -4,7 +4,6 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
 import pandas as pd
 import numpy as np
 from netdata_pandas.data import get_data
@@ -19,11 +18,8 @@ from .utils.inputs import (
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
 from .utils.utils import process_opts
-from .plots.lines import plot_lines, plot_lines_grid
-from .plots.scatter import plot_scatters
-from .plots.hists import plot_hists
-from .data.core import normalize_df, smooth_df
-from .help_popup.metrics_explorer import help, toggle_help
+from .plots.lines import plot_lines_grid
+from apps.help.metrics_model import help
 
 # defaults
 app_prefix = 'mm'

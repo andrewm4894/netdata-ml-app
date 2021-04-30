@@ -3,7 +3,6 @@
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 from netdata_pandas.data import get_data
@@ -18,7 +17,7 @@ from .utils.inputs import (
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
 from .utils.utils import process_opts
-from .help_popup.heatmap import help, toggle_help
+from apps.help.heatmap import help
 
 # defaults
 app_prefix = 'hm'

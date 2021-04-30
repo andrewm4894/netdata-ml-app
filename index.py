@@ -8,10 +8,10 @@ from app import app
 from apps import (
     app_home, app_clustering, app_heatmap, app_percentiles,
     app_alarms_affinity, app_changepoints, app_metrics_explorer,
-    app_correlations, app_anomalies, app_mp_anomalies,
+    app_correlations, app_anomalies, app_mp_anomalies, app_metrics_model,
     help_metrics_explorer, help_heatmap, help_changepoints, help_percentiles,
     help_alarms_affinity, help_clustering, help_correlations, help_anomalies,
-    help_mp_anomalies
+    help_mp_anomalies, help_metrics_model
 )
 
 server = app.server
@@ -43,6 +43,8 @@ def display_page(pathname):
         return app_anomalies.layout
     elif pathname == '/mp-anomalies':
         return app_mp_anomalies.layout
+    elif pathname == '/metrics-model':
+        return app_metrics_model.layout
     # home
     elif pathname == '/':
         return app_home.layout
@@ -65,6 +67,8 @@ def display_page(pathname):
         return help_anomalies.layout
     elif pathname == '/mp-anomalies-help':
         return help_mp_anomalies.layout
+    elif pathname == '/metrics-model-help':
+        return help_metrics_model.layout
     # 404
     else:
         return '404'

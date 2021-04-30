@@ -54,6 +54,11 @@ card_mp_anomalies = make_card(
     'Anomaly detection using Matrix Profile',
     'mp_anomalies_logo.png'
 )
+card_metrics_model = make_card(
+    dbc.Button(dcc.Markdown('Metric Model'), href='/metrics-model', style={'height': '40px'}),
+    'Build a predictive model for a metrics of interest.',
+    'metrics_model_logo.png'
+)
 cards = dbc.CardColumns([
     card_metrics_explorer,
     card_changepoints,
@@ -63,7 +68,8 @@ cards = dbc.CardColumns([
     card_clustering,
     card_correlations,
     card_anomalies,
-    card_mp_anomalies
+    card_mp_anomalies,
+    card_metrics_model
 ], style=DEFAULT_STYLE)
 
 # make layout

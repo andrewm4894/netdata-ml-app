@@ -10,14 +10,14 @@ import plotly.graph_objects as go
 from netdata_pandas.data import get_data
 
 from app import app
-from .utils.inputs import (
+from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_charts_regex
 )
-from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, make_empty_fig
-from .utils.utils import process_opts
-from apps.help.percentiles import help
+from apps.core.utils.logo import logo
+from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
+from apps.core.utils.utils import process_opts
+from apps.help.popup_percentiles import help
 
 # defaults
 app_prefix = 'pc'

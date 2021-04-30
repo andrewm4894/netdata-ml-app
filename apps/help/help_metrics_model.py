@@ -4,8 +4,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
-from apps.utils.logo import logo
-from apps.utils.defaults import DEFAULT_STYLE
+from apps.core.utils.logo import logo
+from apps.core.utils.defaults import DEFAULT_STYLE
 
 help_body = """
 ## Metrics Model

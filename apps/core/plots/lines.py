@@ -3,7 +3,7 @@ from typing import Union
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from ..utils.utils import get_cols_like
+from apps.core.utils.utils import get_cols_like
 
 
 def normalize_col(col, normalize_method: str = 'minmax'):

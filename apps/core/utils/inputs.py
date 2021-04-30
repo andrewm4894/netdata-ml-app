@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 from app import app
-from apps.config.config import get_config
+from apps.core.config.config import get_config
 
 app_config_found, app_config = get_config()
 app_config_hosts = app_config.get('hosts')

@@ -4,7 +4,7 @@ import itertools
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from ..utils.utils import get_cols_like
+from apps.core.utils.utils import get_cols_like
 from plotly.subplots import make_subplots
 
 

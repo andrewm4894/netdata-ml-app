@@ -1,7 +1,7 @@
 #%%
 
 from netdata_pandas.data import get_data
-from apps.changepoint.core import get_changepoints
+from apps.core.changepoint.core import get_changepoints
 from am4894plots.plots import plot_lines
 import time
 

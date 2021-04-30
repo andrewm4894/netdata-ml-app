@@ -3,9 +3,7 @@
 #%%
 
 from netdata_pandas.data import get_data
-from apps.changepoint.core import get_changepoints
-from am4894plots.plots import plot_lines, plot_lines_grid
-import time
+from am4894plots.plots import plot_lines_grid
 import stumpy
 import numpy as np
 
@@ -86,13 +84,10 @@ fig.show()
 
 #%matplotlib inline
 
-import pandas as pd
 import stumpy
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.dates as dates
 from matplotlib.patches import Rectangle
-import datetime as dt
 
 plt.rcParams["figure.figsize"] = [20, 6]  # width, height
 plt.rcParams['xtick.direction'] = 'out'

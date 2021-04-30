@@ -8,18 +8,18 @@ from netdata_pandas.data import get_data
 from datetime import datetime, timedelta
 
 from app import app
-from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, make_empty_fig
-from .utils.inputs import (
+from apps.core.utils.logo import logo
+from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
+from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_metrics, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
-from .utils.utils import process_opts
-from .plots.lines import plot_lines, plot_lines_grid
-from .plots.scatter import plot_scatters
-from .plots.hists import plot_hists
-from .data.core import normalize_df, smooth_df
-from apps.help.metrics_explorer import help
+from apps.core.utils.utils import process_opts
+from apps.core.plots.lines import plot_lines, plot_lines_grid
+from apps.core.plots.scatter import plot_scatters
+from apps.core.plots.hists import plot_hists
+from apps.core.data.core import normalize_df, smooth_df
+from apps.help.popup_metrics_explorer import help
 
 # defaults
 app_prefix = 'me'

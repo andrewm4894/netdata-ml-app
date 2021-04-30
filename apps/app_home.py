@@ -3,10 +3,9 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
-from app import app
-from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE
-from .utils.inputs import make_card
+from apps.core.utils.logo import logo
+from apps.core.utils.defaults import DEFAULT_STYLE
+from apps.core.utils.inputs import make_card
 
 # cards
 card_metrics_explorer = make_card(

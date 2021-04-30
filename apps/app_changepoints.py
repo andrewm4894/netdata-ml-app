@@ -7,16 +7,16 @@ from netdata_pandas.data import get_data
 from datetime import datetime, timedelta
 
 from app import app
-from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, make_empty_fig
-from .utils.inputs import (
+from apps.core.utils.logo import logo
+from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
+from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_charts_regex
 )
-from .utils.utils import process_opts
-from .changepoint.core import get_changepoints
-from .plots.lines import plot_lines
-from apps.help.changepoints import help
+from apps.core.utils.utils import process_opts
+from apps.core.changepoint.core import get_changepoints
+from apps.core.plots.lines import plot_lines
+from apps.help.popup_changepoints import help
 
 # defaults
 app_prefix = 'cp'

@@ -2,10 +2,9 @@ import numpy as np
 import pandas as pd
 import math
 
-from ..utils.utils import get_cols_like
+from apps.core.utils.utils import get_cols_like
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-import plotly.express as px
 
 
 def plot_hists(df: pd.DataFrame, cols: list = None, h: int = None, w: int = None, spacing: float = 0.05,

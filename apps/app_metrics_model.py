@@ -5,16 +5,16 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import pandas as pd
-import numpy as np
 from netdata_pandas.data import get_data
 from datetime import datetime, timedelta
-from sklearn.ensemble import RandomForestRegressor
 
 from app import app
+from apps.core.data.core import smooth_df
+from apps.core.metrics_model.core import preprocess_data, get_feature_importance, get_topn_model_score
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
 from apps.core.utils.inputs import (
-    make_main_menu, make_inputs_host, make_inputs_metrics, make_inputs_after, make_inputs_before,
+    make_main_menu, make_inputs_host, make_inputs_generic, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
 from apps.core.utils.utils import process_opts
@@ -23,19 +23,22 @@ from apps.help.popup_metrics_model import help
 
 # defaults
 app_prefix = 'mm'
-DEFAULT_OPTS = 'top_n=10'
-DEFAULT_METRICS = 'system.cpu|user'
-DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
+DEFAULT_OPTS = 'top_n=10,n_estimators=100,max_depth=3,protocol=https,smooth_n=10,freq=1s,std_threshold=0.01'
+DEFAULT_TARGET = 'system.cpu|user'
+DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=5), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
 # inputs
 main_menu = make_main_menu(app_prefix)
 inputs_host = make_inputs_host(app_prefix)
-inputs_metrics = make_inputs_metrics(app_prefix, DEFAULT_METRICS)
+inputs_target = make_inputs_generic(
+    prefix=app_prefix, suffix='target', input_type='text', default_value=DEFAULT_TARGET,
+    tooltip_text='Metric you want to build a model for.', label_text='target metric'
+)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_metrics, 6), (inputs_opts, 6)])
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_target, 6), (inputs_opts, 6)])
 
 # layout
 tabs = make_tabs(app_prefix, [('Results', 'results')])
@@ -47,13 +50,14 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     Input(f'{app_prefix}-btn-run', 'n_clicks'),
     Input(f'{app_prefix}-tabs', 'active_tab'),
     State(f'{app_prefix}-input-host', 'value'),
-    State(f'{app_prefix}-input-metrics', 'value'),
+    State(f'{app_prefix}-input-target', 'value'),
     State(f'{app_prefix}-input-after', 'value'),
     State(f'{app_prefix}-input-before', 'value'),
     State(f'{app_prefix}-input-opts', 'value'),
 )
-def run(n_clicks, tab, host, metrics, after, before, opts='',
-        top_n='10'):
+def run(n_clicks, tab, host, target, after, before, opts='',
+        top_n='10', protocol='https', freq='1s', smooth_n=10, n_estimators=100, max_depth=3,
+        std_threshold=0.01):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
@@ -74,9 +78,12 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
 
     opts = process_opts(opts)
     top_n = int(opts.get('top_n', top_n))
-    n_estimators = 250
-    max_depth = 3
-    std_threshold = 0.01
+    protocol = str(opts.get('protocol', protocol))
+    freq = str(opts.get('freq', freq))
+    smooth_n = int(opts.get('smooth_n', smooth_n))
+    n_estimators = int(opts.get('n_estimators', n_estimators))
+    max_depth = int(opts.get('max_depth', max_depth))
+    std_threshold = float(opts.get('std_threshold', std_threshold))
     after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
     before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
 
@@ -86,71 +93,36 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
 
     if recalculate:
 
-        metrics = metrics.split(',')
-        df = get_data(hosts=[host], charts_regex='.*', after=after, before=before, index_as_datetime=True)
-        print(df.shape)
-
-        target = np.random.choice(df.columns, 1)[0]
-        target_chart = target.split('|')[0]
-        print(target)
-
-        # make y
-        y = (df[target].shift(-1) + df[target].shift(-2) + df[target].shift(-3)) / 3
-        df = df.drop([target], axis=1)
-
-        # drop cols from same chart
-        cols_to_drop = [col for col in df.columns if col.startswith(f'{target_chart}|')]
-        df = df.drop(cols_to_drop, axis=1)
-
-        # drop useless cols
-        df = df.drop(df.std()[df.std() < std_threshold].index.values, axis=1)
-        print(df.shape)
-
-        # work in diffs
-        df = df.diff()
-
-        # make x
-        lags_n = 5
-        colnames = [f'{col}_lag{n}' for n in [n for n in range(lags_n + 1)] for col in df.columns]
-        df = pd.concat([df.shift(n) for n in range(lags_n + 1)], axis=1).dropna()
-        df.columns = colnames
-        df = df.join(y).dropna()
-        y = df[target].values
-        del df[target]
-        X = df.values
-
-        regr = RandomForestRegressor(max_depth=max_depth, n_estimators=n_estimators)
-        regr.fit(X, y)
-
-        # print r-square
-        score = round(regr.score(X, y), 2)
-        print(target)
-        print(f'score={score}')
-
-        df_feature_imp = pd.DataFrame.from_dict(
-            {x[0]: x[1] for x in (zip(colnames, regr.feature_importances_))}, orient='index',
-            columns=['importance']
+        df = get_data(
+            hosts=[host], charts_regex='.*', after=after,
+            before=before, index_as_datetime=True, protocol=protocol,
+            freq=freq
         )
-        df_feature_imp = df_feature_imp.sort_values('importance', ascending=False)
-        print(df_feature_imp.head(10))
+        if smooth_n >= 1:
+            df = smooth_df(df, smooth_n)
 
-        # refit using top n features
-        regr = RandomForestRegressor(max_depth=2, random_state=0, n_estimators=100)
-        X = df[list(df_feature_imp.head(top_n).index)].values
-        regr.fit(X, y)
-        score = round(regr.score(X, y), 2)
-        print(f'score={score}')
+        # preprocess data
+        df, X, y, colnames = preprocess_data(df, target, std_threshold)
+
+        # get feature importance
+        df_feature_importance = get_feature_importance(X, y, colnames, n_estimators, max_depth)
+        top_n_features = list(df_feature_importance.head(top_n).index)
+
+        # fit top n model score
+        score = get_topn_model_score(df, y, top_n_features, n_estimators, max_depth)
+
 
     if tab == f'{app_prefix}-tab-results':
 
         fig = plot_lines_grid(
-            df=pd.concat([pd.DataFrame(y, columns=['y'], index=df.index), df[list(df_feature_imp.head(top_n).index)]],
+            df=pd.concat([pd.DataFrame(y, columns=['y'], index=df.index), df[top_n_features]],
                          axis=1),
             title=f'{target} - most predictive metrics by importance (r-square={score})',
             h_each=150,
             lw=2,
             xaxes_visible=False,
             yaxes_visible=False,
+            legend=False
         )
         figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig', figure=fig)))
 

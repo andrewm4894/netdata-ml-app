@@ -54,7 +54,7 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State('me-input-opts', 'value'),
 )
 def run(n_clicks, tab, host, metrics, after, before, opts='',
-        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False'):
+        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True'):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
@@ -78,6 +78,8 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
     n_cols = int(opts.get('n_cols', n_cols))
     h = int(opts.get('h', h))
     w = int(opts.get('w', w))
+    lw = int(opts.get('lw', lw))
+    legend = True if opts.get('legend', legend).lower() == 'true' else False
     diff = True if opts.get('diff', diff).lower() == 'true' else False
     after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
     before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
@@ -100,13 +102,13 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
     if tab == 'me-tab-ts-plots':
 
         fig = plot_lines(
-            normalize_df(df), h=600, lw=1, visible_legendonly=False, hide_y_axis=True
+            normalize_df(df), h=600, lw=lw, visible_legendonly=False, hide_y_axis=True,
         )
         figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot', figure=fig)))
 
         fig = plot_lines_grid(
-            df, h=max(300, 75*len(df.columns)), xaxes_visible=False, legend=True, yaxes_visible=False, subplot_titles=[''],
-
+            df, h=max(300, 75*len(df.columns)), xaxes_visible=False, legend=legend, yaxes_visible=False,
+            subplot_titles=[''], lw=lw
         )
         figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot-grid', figure=fig)))
 

@@ -1,15 +1,13 @@
 #%%
 
-from apps.core.config.config import get_config
-
-app_config = get_config()
-print(app_config)
-
-
 #%%
 
 from netdata_pandas.data import get_data
 
-df = get_data(freq='10s')
+host = 'london.my-netdata.io'
+after = 1620132660
+before = 1620133560
+df = get_data(hosts=[host], charts_regex='system.cpu', after=after, before=before, index_as_datetime=True, protocol='https')
+print(df.shape)
 
 #%%

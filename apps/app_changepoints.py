@@ -50,7 +50,7 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State('cp-input-opts', 'value'),
 )
 def run(n_clicks, tab, host, charts_regex, after, before, opts='', smooth_n=5,
-        n_samples=50, sample_len=50, n_results=50, window=100, diff_min=0.05):
+        n_samples=50, sample_len=50, n_results=50, window=100, diff_min=0.05, lw=1):
 
     figs = []
 
@@ -60,6 +60,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', smooth_n=5,
     sample_len = int(opts.get('sample_len', sample_len))
     n_results = int(opts.get('n_results', n_results))
     window = int(opts.get('window', window))
+    lw = int(opts.get('lw', lw))
     diff_min = float(opts.get('diff_min', diff_min))
     after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
     before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
@@ -90,7 +91,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', smooth_n=5,
             fig_changepoint = plot_lines(
                 df, [metric], title=f'{quality_rank} - {metric} (qs={qs}, diff={diff})',
                 shade_regions=[(changepoint, df.index.max(), 'grey')],
-                slider=False, h=300,
+                slider=False, h=300, lw=lw
             )
             figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=fig_changepoint)))
 

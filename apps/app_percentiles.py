@@ -50,12 +50,13 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-before', 'value'),
     State(f'{app_prefix}-input-opts', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts, ref='1h'):
+def run(n_clicks, tab, host, charts_regex, after, before, opts, ref='1h', lw=1):
 
     figs = []
 
     opts = process_opts(opts)
     ref = opts.get('ref', ref)
+    lw = int(opts.get('lw', lw))
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='cp-fig', figure=make_empty_fig())))
@@ -142,49 +143,49 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, ref='1h'):
                 fig.add_trace(
                     go.Scatter(
                         x=df.index, y=raw_data, mode='lines', name=col,
-                        line=dict(width=1)
+                        line=dict(width=lw)
                     )
                 )
                 # p99
                 fig.add_trace(
                     go.Scatter(
                         x=df.index, y=p99_data, mode='lines', name=f'p99',
-                        line=dict(color='grey', width=1, dash='dashdot')
+                        line=dict(color='grey', width=lw, dash='dashdot')
                     )
                 )
                 # p95
                 fig.add_trace(
                     go.Scatter(
                         x=df.index, y=p95_data, mode='lines', name=f'p95',
-                        line=dict(color='grey', width=1, dash='dash')
+                        line=dict(color='grey', width=lw, dash='dash')
                     )
                 )
                 # mean
                 fig.add_trace(
                     go.Scatter(
                         x=df.index, y=mean_data, mode='lines', name=f'avg',
-                        line=dict(color='black', width=1)
+                        line=dict(color='black', width=lw)
                     )
                 )
                 # median
                 fig.add_trace(
                     go.Scatter(
                         x=df.index, y=median_data, mode='lines', name=f'med',
-                        line=dict(color='black', width=1, dash='dash')
+                        line=dict(color='black', width=lw, dash='dash')
                     )
                 )
                 # p5
                 fig.add_trace(
                     go.Scatter(
                         x=df.index, y=p5_data, mode='lines', name=f'p5',
-                        line=dict(color='grey', width=1, dash='dot')
+                        line=dict(color='grey', width=lw, dash='dot')
                     )
                 )
                 # p1
                 fig.add_trace(
                     go.Scatter(
                         x=df.index, y=p1_data, mode='lines', name=f'p1',
-                        line=dict(color='grey', width=1, dash='dashdot')
+                        line=dict(color='grey', width=lw, dash='dashdot')
                     )
                 )
                 fig.update_layout(

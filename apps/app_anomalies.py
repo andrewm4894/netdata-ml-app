@@ -8,9 +8,6 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime, timedelta
 from netdata_pandas.data import get_data
-from pyod.models.hbos import HBOS
-from pyod.models.pca import PCA
-from sklearn.cluster import AgglomerativeClustering
 
 from app import app
 from apps.core.plots.lines import plot_lines, plot_lines_grid
@@ -21,7 +18,7 @@ from apps.core.utils.inputs import (
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
 from apps.core.utils.utils import process_opts, get_reference_timedelta, get_ref_windows
-from apps.core.anomalies.core import make_features
+from apps.core.anomalies.core import make_features, build_models, cluster_sort
 from apps.help.popup_anomalies import help
 
 # defaults
@@ -38,7 +35,8 @@ inputs_charts_regex = make_inputs_charts_regex(app_prefix, DEFAULT_CHARTS_REGEX)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6)])
+inputs = make_inputs(
+    [(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6)])
 
 # layout
 tabs = make_tabs(
@@ -65,7 +63,6 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
 )
 def run(n_clicks, tab, host, charts_regex, after, before, opts, train='1h', freq='15s', lags_n=3, diffs_n=1,
         smooth_n=3, contamination=0.01):
-
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
     global df, df_train, df_preds, df_probs, charts
@@ -99,7 +96,8 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, train='1h', freq
         before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
         df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
         train_before, train_after = get_ref_windows(train_timedelta, df)
-        df_train = get_data(hosts=[host], charts_regex=charts_regex, after=train_after, before=train_before, index_as_datetime=True)
+        df_train = get_data(hosts=[host], charts_regex=charts_regex, after=train_after, before=train_before,
+                            index_as_datetime=True)
 
         if freq:
             df = df.resample(freq).mean()
@@ -112,56 +110,28 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, train='1h', freq
         df_features_train = pd.DataFrame(arr_train, columns=colnames_train).ffill().bfill()
 
         # build models and get anomaly scores
-        charts = list(set([col.split('|')[0] for col in df.columns]))
-        preds, probs = {}, {}
-
-        for chart in charts:
-
-            chart_cols = [col for col in df_features.columns if col.startswith(f'{chart}|')]
-            model = PCA(contamination=contamination)
-            X_train = df_features_train[chart_cols].values
-            X = df_features[chart_cols].values
-            try:
-                model.fit(X_train)
-                preds[chart] = model.predict(X)
-                probs[chart] = model.predict_proba(X)[:, 1].tolist()
-            except:
-                model = HBOS(contamination=contamination)
-                model.fit(X_train)
-                preds[chart] = model.predict(X)
-                probs[chart] = model.predict_proba(X)[:, 1].tolist()
-
-        df_preds = pd.DataFrame.from_dict(preds, orient='columns')
-        df_probs = pd.DataFrame.from_dict(probs, orient='columns')
-        len_preds = len(df_preds)
-        df_preds['time'] = df.tail(len_preds).index
-        df_preds = df_preds.set_index('time')
-        df_probs['time'] = df.tail(len_preds).index
-        df_probs = df_probs.set_index('time')
-
-        df_probs['average_probability'] = df_probs.mean(axis=1)
-        df_preds['anomaly_count'] = df_preds.sum(axis=1)
+        df_preds, df_probs = build_models(df, df_features, df_features_train, contamination)
 
     if tab == f'{app_prefix}-tab-anomaly-probs':
 
-        fig = plot_lines(df_probs, h=600, show_p=False, return_p=True)
+        fig = plot_lines(df_probs, h=600)
         figs.append(html.Div(dcc.Graph(id='ad-fig-lines', figure=fig)))
 
         fig = plot_lines_grid(
-            df_probs, sorted(df_probs.columns), h=75*len(df_probs.columns), yaxes_visible=False, xaxes_visible=False,
-            subplot_titles=['' for i in range(len(df_probs.columns))], show_p=False, return_p=True
+            df_probs, sorted(df_probs.columns), h=75 * len(df_probs.columns), yaxes_visible=False, xaxes_visible=False,
+            subplot_titles=['' for i in range(len(df_probs.columns))]
         )
         figs.append(html.Div(dcc.Graph(id='ad-fig', figure=fig)))
 
     elif tab == f'{app_prefix}-tab-anomaly-preds':
 
         plot_cols = [c for c in df_preds.columns if c != 'anomaly_count']
-        fig = plot_lines(df_preds, plot_cols, h=600, show_p=False, return_p=True, stacked=True, lw=0)
+        fig = plot_lines(df_preds, plot_cols, h=600, stacked=True, lw=0)
         figs.append(html.Div(dcc.Graph(id='ad-fig-lines', figure=fig)))
 
         fig = plot_lines_grid(
-            df_preds, sorted(df_preds.columns), h=75*len(df_preds.columns), yaxes_visible=False, xaxes_visible=False,
-            subplot_titles=['' for i in range(len(df_preds.columns))], show_p=False, return_p=True
+            df_preds, sorted(df_preds.columns), h=75 * len(df_preds.columns), yaxes_visible=False, xaxes_visible=False,
+            subplot_titles=['' for i in range(len(df_preds.columns))]
         )
         figs.append(html.Div(dcc.Graph(id='ad-fig', figure=fig)))
 
@@ -171,20 +141,19 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, train='1h', freq
         models = list(df_preds.sum().sort_values(ascending=False).index)
         models = [m for m in models if m != 'anomaly_count']
         for chart in models:
-
             anomaly_rate = round(df_preds[chart].mean() * 100, 2)
 
             chart_cols = [col for col in df.columns if col.startswith(f'{chart}|')]
             shade_regions = [(i, i + timedelta(seconds=10), 'red') for i in df_preds[df_preds[chart] == 1].index]
             title = f'{chart} - Raw Data ({anomaly_rate}% anomalous)'
             fig = plot_lines(
-                df, chart_cols, h=500, show_p=False, return_p=True, title=title, shade_regions=shade_regions
+                df, chart_cols, h=500, title=title, shade_regions=shade_regions
             )
             fig.update_layout(showlegend=False)
             figs.append(html.Div(dcc.Graph(id=f'ad-fig-chart-{i}', figure=fig)))
             title = f'{chart} - Anomaly Probability'
             fig = plot_lines(
-                df_probs, [chart], h=500, show_p=False, return_p=True, title=title
+                df_probs, [chart], h=500, title=title
             )
             figs.append(html.Div(dcc.Graph(id=f'ad-fig-chart-as-{i}', figure=fig)))
             i += 1
@@ -192,22 +161,14 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, train='1h', freq
     elif tab == f'{app_prefix}-tab-anomaly-heatmap':
 
         n_clusters = int(round(len(df_probs.columns) * 0.2, 0))
-        columns = ['chart', 'cluster']
         colors = 'Greens'
 
-        clustering = AgglomerativeClustering(n_clusters=n_clusters).fit(df_preds.fillna(0).transpose().values)
-        cols_labels = zip(df_preds.columns, clustering.labels_)
-        cols_sorted = pd.DataFrame(cols_labels, columns=columns).sort_values('cluster')['chart'].values.tolist()
-        df_preds = df_preds[cols_sorted]
-        plot_cols = [col for col in cols_sorted if col != 'anomaly_count']
+        df_preds, plot_cols = cluster_sort(df_preds, n_clusters)
         fig = px.imshow(df_preds[plot_cols].transpose(), color_continuous_scale=colors)
         fig.update_layout(autosize=False, width=1400, height=len(df_preds.columns) * 40)
         figs.append(html.Div(dcc.Graph(id='ad-fig-heatmap-preds', figure=fig)))
 
-        clustering = AgglomerativeClustering(n_clusters=n_clusters).fit(df_probs.fillna(0).transpose().values)
-        cols_labels = zip(df_probs.columns, clustering.labels_)
-        cols_sorted = pd.DataFrame(cols_labels, columns=columns).sort_values('cluster')['chart'].values.tolist()
-        df_probs = df_probs[cols_sorted]
+        df_probs, plot_cols = cluster_sort(df_probs, n_clusters)
         fig = px.imshow(df_probs.transpose(), color_continuous_scale=colors)
         fig.update_layout(autosize=False, width=1400, height=len(df_probs.columns) * 40)
         figs.append(html.Div(dcc.Graph(id='ad-fig-heatmap-probs', figure=fig)))

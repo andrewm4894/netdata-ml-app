@@ -23,10 +23,9 @@ from apps.help.popup_metrics_explorer import help
 
 # defaults
 app_prefix = 'me'
-DEFAULT_OPTS = 'smooth_n=5'
-#DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.load|load1'
+DEFAULT_OPTS = 'smooth_n=15'
 DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
-DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
+DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
 # inputs
@@ -44,18 +43,17 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
 
 
 @app.callback(
-    Output('me-figs', 'children'),
-    Input('me-btn-run', 'n_clicks'),
-    Input('me-tabs', 'active_tab'),
-    State('me-input-host', 'value'),
-    State('me-input-metrics', 'value'),
-    State('me-input-after', 'value'),
-    State('me-input-before', 'value'),
-    State('me-input-opts', 'value'),
+    Output(f'{app_prefix}-figs', 'children'),
+    Input(f'{app_prefix}-btn-run', 'n_clicks'),
+    Input(f'{app_prefix}-tabs', 'active_tab'),
+    State(f'{app_prefix}-input-host', 'value'),
+    State(f'{app_prefix}-input-metrics', 'value'),
+    State(f'{app_prefix}-input-after', 'value'),
+    State(f'{app_prefix}-input-before', 'value'),
+    State(f'{app_prefix}-input-opts', 'value'),
 )
 def run(n_clicks, tab, host, metrics, after, before, opts='',
         smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True'):
-
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
     global df
@@ -99,35 +97,34 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
         if diff:
             df = df.diff()
 
-    if tab == 'me-tab-ts-plots':
+    if tab == f'{app_prefix}-tab-ts-plots':
 
         fig = plot_lines(
             normalize_df(df), h=600, lw=lw, visible_legendonly=False, hide_y_axis=True,
         )
-        figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot', figure=fig)))
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-ts-plot', figure=fig)))
 
         fig = plot_lines_grid(
-            df, h=max(300, 75*len(df.columns)), xaxes_visible=False, legend=legend, yaxes_visible=False,
+            df, h=max(300, 75 * len(df.columns)), xaxes_visible=False, legend=legend, yaxes_visible=False,
             subplot_titles=[''], lw=lw
         )
-        figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot-grid', figure=fig)))
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-ts-plot-grid', figure=fig)))
 
-    elif tab == 'me-tab-scatter-plots':
+    elif tab == f'{app_prefix}-tab-scatter-plots':
 
         fig = plot_scatters(
-            df, n_cols=n_cols, w=w, h=600*len(df.columns)
+            df, n_cols=n_cols, w=w, h=600 * len(df.columns)
         )
-        figs.append(html.Div(dcc.Graph(id='me-fig-scatter-plot', figure=fig)))
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-scatter-plot', figure=fig)))
 
-    elif tab == 'me-tab-hist-plots':
+    elif tab == f'{app_prefix}-tab-hist-plots':
 
         fig = plot_hists(
             df, shared_yaxes=False, n_cols=n_cols, w=w, h=1200,
         )
-        figs.append(html.Div(dcc.Graph(id='me-fig-hist-plot', figure=fig)))
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-hist-plot', figure=fig)))
 
     states_previous = states_current
     inputs_previous = inputs_current
 
     return figs
-

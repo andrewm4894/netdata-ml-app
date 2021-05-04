@@ -38,7 +38,7 @@ inputs_target = make_inputs_generic(
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_target, 6), (inputs_opts, 6)])
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_target, 3), (inputs_opts, 9)])
 
 # layout
 tabs = make_tabs(app_prefix, [('Results', 'results')])
@@ -57,7 +57,7 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
 )
 def run(n_clicks, tab, host, target, after, before, opts='',
         top_n='10', protocol='https', freq='1s', smooth_n=10, n_estimators=100, max_depth=3,
-        std_threshold=0.01):
+        std_threshold=0.01, lw=1):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
@@ -83,6 +83,7 @@ def run(n_clicks, tab, host, target, after, before, opts='',
     smooth_n = int(opts.get('smooth_n', smooth_n))
     n_estimators = int(opts.get('n_estimators', n_estimators))
     max_depth = int(opts.get('max_depth', max_depth))
+    lw = int(opts.get('lw', lw))
     std_threshold = float(opts.get('std_threshold', std_threshold))
     after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
     before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
@@ -119,7 +120,7 @@ def run(n_clicks, tab, host, target, after, before, opts='',
                          axis=1),
             title=f'{target} - most predictive metrics by importance (r-square={score})',
             h_each=150,
-            lw=2,
+            lw=lw,
             xaxes_visible=False,
             yaxes_visible=False,
             legend=False

@@ -49,7 +49,7 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-before', 'value'),
     State(f'{app_prefix}-input-opts', 'value')
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
+def run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20, lw=1):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
@@ -69,6 +69,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
 
     opts = process_opts(opts)
     k = int(opts.get('k', k))
+    lw = int(opts.get('lw', lw))
 
     figs = []
 
@@ -98,7 +99,8 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
         fig_centers = plot_lines_grid(
             df=model.df_cluster_centers[valid_clusters],
             subplot_titles=titles, h_each=300,
-            legend=False, yaxes_visible=False, xaxes_visible=False
+            legend=False, yaxes_visible=False, xaxes_visible=False,
+            lw=lw
         )
         figs.append(html.Div(dcc.Graph(id='cl-fig-centers', figure=fig_centers)))
 
@@ -109,7 +111,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', k=20):
             title = f"Cluster {cluster} (n={model.cluster_len_dict[cluster]}, score={model.cluster_quality_dict[cluster]})"
             plot_cols = model.cluster_metrics_dict[cluster]
             fig_cluster = plot_lines(
-                df=model.df, cols=plot_cols, title=title, slider=False
+                df=model.df, cols=plot_cols, title=title, slider=False, lw=lw
             )
             figs.append(html.Div(dcc.Graph(id=f'fig-{cluster}', figure=fig_cluster)))
 

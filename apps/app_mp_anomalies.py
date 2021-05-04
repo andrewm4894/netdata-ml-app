@@ -53,7 +53,7 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-before', 'value'),
     State(f'{app_prefix}-input-opts', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='15s', m=30, n_results=100):
+def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='15s', m=30, n_results=100, lw=1):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
@@ -76,6 +76,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='15s', m=30
     freq = opts.get('freq', freq)
     m = int(opts.get('m', m))
     n_results = int(opts.get('n_results', n_results))
+    lw = int(opts.get('lw', lw))
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='mp-fig', figure=make_empty_fig())))
@@ -135,7 +136,9 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='15s', m=30
             df_tmp = df[[col]]
             df_tmp['mp'] = mp_dists[col]
 
-            fig = plot_lines_grid(df_tmp, title=f'{col} (rank={rank}, score={score})', subplot_titles='', legend=False)
+            fig = plot_lines_grid(
+                df_tmp, title=f'{col} (rank={rank}, score={score})', subplot_titles='', legend=False, lw=lw
+            )
             figs.append(html.Div(dcc.Graph(id='mp-fig-lines', figure=fig)))
 
     else:

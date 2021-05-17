@@ -4,6 +4,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import pandas as pd
+import numpy as np
 import plotly.express as px
 from netdata_pandas.data import get_data
 from sklearn.cluster import AgglomerativeClustering
@@ -51,13 +52,15 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-before', 'value'),
     State(f'{app_prefix}-input-opts', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1200'):
+def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1200', thold=None, norm='True'):
 
     figs = []
 
     opts = process_opts(opts)
     freq = opts.get('freq', freq)
     w = int(opts.get('w', w))
+    thold = opts.get('thold', thold)
+    norm = bool(opts.get('norm', norm))
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='cp-fig', figure=make_empty_fig())))
@@ -71,8 +74,16 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1
         df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
         # lets resample to a specific frequency
         df = df.resample(freq).mean()
+        # apply thold if specified
+        if thold:
+            df = pd.DataFrame(
+                data=np.where(df >= float(thold), 1, 0),
+                columns=df.columns,
+                index=df.index
+            )
         # lets min-max normalize our data so metrics can be compared on a heatmap
-        df = (df - df.min()) / (df.max() - df.min())
+        if norm:
+            df = (df - df.min()) / (df.max() - df.min())
         # drop na cols
         df = df.dropna(how='all', axis=1)
         # lets do some clustering to sort similar cols

@@ -9,10 +9,9 @@ from app import app
 app_prefix = 'pc'
 
 help_body = """
-TODO  
-  
-###### TODO  
-todo.  
+Use a reference window to work out metric percentiles and find metrics with highest "crossover rate".  
+###### Percentiles  
+A chart per metric, those with highest "crossover rate" are shown on top.
 """
 
 help = html.Div([

@@ -9,10 +9,15 @@ from app import app
 app_prefix = 'ad'
 
 help_body = """
-TODO  
-  
-###### TODO  
-todo.  
+Perform various correlation based analysis on each pair of metrics.
+###### Anomaly Flags
+Line graphs of which charts have been flagged as anomalous.
+###### Anomaly Probabilities
+Line graphs of anomaly probability score per chart.
+###### Anomaly Heatmaps
+Heatmaps of anomaly flags and probabilities per chart.
+###### Charts
+Line plots of the raw charts with anomalous regions shaded.
 """
 
 help = html.Div([

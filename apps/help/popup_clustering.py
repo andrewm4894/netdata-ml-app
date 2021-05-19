@@ -9,10 +9,11 @@ from app import app
 app_prefix = 'cl'
 
 help_body = """
-TODO  
-  
-###### TODO  
-todo.  
+Perform time series clustering on metrics to 'group' similar looking metrics together.  
+###### Cluster Centers  
+A line plot showing the cluster centers for each cluster. The aim here is to give a feel for the 'shape' of each cluster.  
+###### Cluster Details  
+For each cluster plot each metric that is a part of it, ordered by cluster quality score.  
 """
 
 help = html.Div([

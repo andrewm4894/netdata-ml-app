@@ -9,10 +9,13 @@ from app import app
 app_prefix = 'cor'
 
 help_body = """
-TODO  
-  
-###### TODO  
-todo.  
+Perform various correlation based analysis on each pair of metrics.  
+###### Correlation Heatmap  
+A heatmap of all pairwise correlations.  
+###### Correlation Barplot  
+A bar plot showing top correlations, green for positive, red for negative.
+###### Correlation Changes  
+A scatter plot and table of correlation before vs after the selected window, to show what pairs of metrics have changed most recently in terms of their correlation.  
 """
 
 help = html.Div([

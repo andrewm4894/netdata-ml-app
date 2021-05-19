@@ -9,10 +9,16 @@ from app import app
 app_prefix = 'al'
 
 help_body = """
-TODO  
+Apply market basket analysis to your alarms to see which alarms/charts co-occur in interesting ways.  
 
-###### TODO  
-todo.  
+###### Alarm Itemsets  
+A table showing with sets of alarms tend to occur together.  
+###### Alarm Rules  
+Association rules found between alarm itemsets.
+###### Chart Itemsets  
+A table showing with sets of charts tend to occur together.  
+###### Chart Rules  
+Association rules found between chart itemsets.  
 """
 
 help = html.Div([

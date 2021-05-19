@@ -9,10 +9,12 @@ from app import app
 app_prefix = 'cp'
 
 help_body = """
-TODO  
-  
-###### TODO  
-todo.  
+Use ML to find some [changepoints](https://en.wikipedia.org/wiki/Change_detection#:~:text=In%20statistical%20analysis%2C%20change%20detection,process%20or%20time%20series%20changes.) in your metrics.  
+###### Changepoints  
+The app will run the [`window`](https://centre-borelli.github.io/ruptures-docs/code-reference/detection/window-reference/) \
+algorithm for changepoint detection on each metric defined by the `charts regex` input.  
+
+Changes found will be ranked and plotted per metric with the region of change highlighted.
 """
 
 help = html.Div([

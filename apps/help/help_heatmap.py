@@ -4,12 +4,30 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
+from apps.core.help.defaults import DEFAULT_HELP_INPUTS_HOST, DEFAULT_HELP_INPUTS_CHARTS_REGEX, \
+    DEFAULT_HELP_INPUTS_AFTER, DEFAULT_HELP_INPUTS_BEFORE, DEFAULT_HELP_INPUTS_OPTIONS
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE
 
-help_body = """
-## TODO
-Blah.
+help_body = f"""
+## Clustered Heatmap
+Make a heatmap and cluster similar rows together to make it pretty.  
+
+#### Inputs
+- {DEFAULT_HELP_INPUTS_HOST}
+- {DEFAULT_HELP_INPUTS_CHARTS_REGEX}
+- {DEFAULT_HELP_INPUTS_AFTER}
+- {DEFAULT_HELP_INPUTS_BEFORE}
+- {DEFAULT_HELP_INPUTS_OPTIONS}
+
+#### Outputs  
+##### Clustered Heatmap  
+Heatmap of each metrics, ordered after clustering.
+
+![image info](./apps/help/assets/help-heatmap.png)
+
+#### Notes
+- Heatmap rows are ordered according to [AgglomerativeClustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html) from [scikit-learn](https://scikit-learn.org/stable/index.html).
 """
 
 main_menu = dbc.Col(dbc.ButtonGroup(

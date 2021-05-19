@@ -7,10 +7,9 @@ from dash.dependencies import Input, Output, State
 from app import app
 
 help_body = """
-TODO  
-  
-###### TODO  
-todo.  
+A clustered heatmap of all the metrics defined by `charts regex`  
+###### Clustered Heatmap  
+X-axis is time, Y-axis is one row per metric.  
 """
 
 help = html.Div([

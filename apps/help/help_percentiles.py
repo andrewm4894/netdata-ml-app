@@ -5,7 +5,7 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 
 from apps.core.help.defaults import DEFAULT_HELP_INPUTS_HOST, DEFAULT_HELP_INPUTS_METRICS, DEFAULT_HELP_INPUTS_AFTER, \
-    DEFAULT_HELP_INPUTS_BEFORE, DEFAULT_HELP_INPUTS_OPTIONS
+    DEFAULT_HELP_INPUTS_BEFORE, DEFAULT_HELP_INPUTS_OPTIONS, DEFAULT_HELP_IMAGE_URL_PERCENTILES
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE
 

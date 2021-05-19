@@ -9,10 +9,9 @@ from app import app
 app_prefix = 'mp'
 
 help_body = """
-TODO  
-  
-###### TODO  
-todo.  
+Compute the "[Matrix Profile](https://matrixprofile.org/#:~:text=The%20matrix%20profile%20is%20a,scalable%20and%20largely%20parameter%2Dfree.)" for each metric and use it to rank the most anomalous metrics.
+##### Anomalies
+For each metric plot the raw data and the matrix profile underneath it. Where the matrix profile is its highest value corresponds to where it thinks the raw data is most anomalous.
 """
 
 help = html.Div([

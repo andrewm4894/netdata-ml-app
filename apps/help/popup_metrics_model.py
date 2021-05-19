@@ -7,7 +7,9 @@ from dash.dependencies import Input, Output, State
 from app import app
 
 help_body = """
-blah
+Build a model for your target metric and see what other metrics are most predictive.
+###### Results
+Line plots of the target metric and its most predictive metrics, along with the r-square of the model.
 """
 
 help = html.Div([

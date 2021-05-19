@@ -139,6 +139,6 @@ def make_card(button, text, logo):
             dbc.CardImg(src=app.get_asset_url(logo), top=True),
             dbc.CardBody([button, dcc.Markdown(text, style={"margin": "4px", "padding": "0px"})]),
         ],
-        style={"margin": "4px", "padding": "4px"}
+        style={"margin": "4px", "padding": "4px"},
     )
     return card

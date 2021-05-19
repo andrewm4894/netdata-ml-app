@@ -4,30 +4,28 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
 from netdata_pandas.data import get_data
 from datetime import datetime, timedelta
 
 from app import app
-from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, make_empty_fig
-from .utils.inputs import (
+from apps.core.utils.logo import logo
+from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
+from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_metrics, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
-from .utils.utils import process_opts
-from .plots.lines import plot_lines, plot_lines_grid
-from .plots.scatter import plot_scatters
-from .plots.hists import plot_hists
-from .data.core import normalize_df, smooth_df
-from .help_popup.metrics_explorer import help, toggle_help
+from apps.core.utils.utils import process_opts
+from apps.core.plots.lines import plot_lines, plot_lines_grid
+from apps.core.plots.scatter import plot_scatters
+from apps.core.plots.hists import plot_hists
+from apps.core.data.core import normalize_df, smooth_df
+from apps.help.popup_metrics_explorer import help
 
 # defaults
 app_prefix = 'me'
-DEFAULT_OPTS = 'smooth_n=5'
-#DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.load|load1'
+DEFAULT_OPTS = 'smooth_n=15'
 DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
-DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
+DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
 # inputs
@@ -37,7 +35,7 @@ inputs_metrics = make_inputs_metrics(app_prefix, DEFAULT_METRICS)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 3), (inputs_metrics, 3), (inputs_after, 3), (inputs_before, 3), (inputs_opts, 6)])
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_metrics, 6), (inputs_opts, 6)])
 
 # layout
 tabs = make_tabs(app_prefix, [('Lines', 'ts-plots'), ('Scatter', 'scatter-plots'), ('Histograms', 'hist-plots')])
@@ -45,18 +43,17 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
 
 
 @app.callback(
-    Output('me-figs', 'children'),
-    Input('me-btn-run', 'n_clicks'),
-    Input('me-tabs', 'active_tab'),
-    State('me-input-host', 'value'),
-    State('me-input-metrics', 'value'),
-    State('me-input-after', 'value'),
-    State('me-input-before', 'value'),
-    State('me-input-opts', 'value'),
+    Output(f'{app_prefix}-figs', 'children'),
+    Input(f'{app_prefix}-btn-run', 'n_clicks'),
+    Input(f'{app_prefix}-tabs', 'active_tab'),
+    State(f'{app_prefix}-input-host', 'value'),
+    State(f'{app_prefix}-input-metrics', 'value'),
+    State(f'{app_prefix}-input-after', 'value'),
+    State(f'{app_prefix}-input-before', 'value'),
+    State(f'{app_prefix}-input-opts', 'value'),
 )
 def run(n_clicks, tab, host, metrics, after, before, opts='',
-        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False'):
-
+        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True'):
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
     global df
@@ -79,6 +76,8 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
     n_cols = int(opts.get('n_cols', n_cols))
     h = int(opts.get('h', h))
     w = int(opts.get('w', w))
+    lw = int(opts.get('lw', lw))
+    legend = True if opts.get('legend', legend).lower() == 'true' else False
     diff = True if opts.get('diff', diff).lower() == 'true' else False
     after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
     before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
@@ -98,35 +97,34 @@ def run(n_clicks, tab, host, metrics, after, before, opts='',
         if diff:
             df = df.diff()
 
-    if tab == 'me-tab-ts-plots':
+    if tab == f'{app_prefix}-tab-ts-plots':
 
         fig = plot_lines(
-            normalize_df(df), h=600, lw=1, visible_legendonly=False, hide_y_axis=True
+            normalize_df(df), h=600, lw=lw, visible_legendonly=False, hide_y_axis=True,
         )
-        figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot', figure=fig)))
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-ts-plot', figure=fig)))
 
         fig = plot_lines_grid(
-            df, h=max(300, 75*len(df.columns)), xaxes_visible=False, legend=True, yaxes_visible=False, subplot_titles=[''],
-
+            df, h=max(300, 75 * len(df.columns)), xaxes_visible=False, legend=legend, yaxes_visible=False,
+            subplot_titles=[''], lw=lw
         )
-        figs.append(html.Div(dcc.Graph(id='me-fig-ts-plot-grid', figure=fig)))
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-ts-plot-grid', figure=fig)))
 
-    elif tab == 'me-tab-scatter-plots':
+    elif tab == f'{app_prefix}-tab-scatter-plots':
 
         fig = plot_scatters(
-            df, n_cols=n_cols, w=w, h=600*len(df.columns)
+            df, n_cols=n_cols, w=w, h=600 * len(df.columns)
         )
-        figs.append(html.Div(dcc.Graph(id='me-fig-scatter-plot', figure=fig)))
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-scatter-plot', figure=fig)))
 
-    elif tab == 'me-tab-hist-plots':
+    elif tab == f'{app_prefix}-tab-hist-plots':
 
         fig = plot_hists(
             df, shared_yaxes=False, n_cols=n_cols, w=w, h=1200,
         )
-        figs.append(html.Div(dcc.Graph(id='me-fig-hist-plot', figure=fig)))
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-hist-plot', figure=fig)))
 
     states_previous = states_current
     inputs_previous = inputs_current
 
     return figs
-

@@ -10,15 +10,16 @@ from datetime import datetime, timedelta
 import numpy as np
 
 from app import app
-from .data.core import make_table
-from .correlations.core import get_df_corr, make_df_corr_long
-from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, make_empty_fig
-from .utils.inputs import (
+from apps.core.data.core import make_table
+from apps.core.correlations.core import get_df_corr, make_df_corr_long
+from apps.core.utils.logo import logo
+from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
+from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_charts_regex, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
-from .utils.utils import process_opts
+from apps.core.utils.utils import process_opts
+from apps.help.popup_correlations import help
 
 # defaults
 app_prefix = 'cor'
@@ -35,7 +36,7 @@ inputs_charts_regex = make_inputs_charts_regex(app_prefix, DEFAULT_CHARTS_REGEX)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 3), (inputs_charts_regex, 3), (inputs_after, 3), (inputs_before, 3), (inputs_opts, 6)])
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6)])
 
 # layout
 tabs = make_tabs(
@@ -46,7 +47,7 @@ tabs = make_tabs(
         ('Correlation Changes', 'correlation-changes')
     ],
 )
-layout = html.Div([logo, main_menu, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
+layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
 @app.callback(

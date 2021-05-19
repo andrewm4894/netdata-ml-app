@@ -3,21 +3,22 @@
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
 import pandas as pd
+import numpy as np
 import plotly.express as px
 from netdata_pandas.data import get_data
 from sklearn.cluster import AgglomerativeClustering
 from datetime import datetime, timedelta
 
 from app import app
-from .utils.logo import logo
-from .utils.defaults import DEFAULT_STYLE, make_empty_fig
-from .utils.inputs import (
+from apps.core.utils.logo import logo
+from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
+from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_charts_regex, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs
 )
-from .utils.utils import process_opts
+from apps.core.utils.utils import process_opts
+from apps.help.popup_heatmap import help
 
 # defaults
 app_prefix = 'hm'
@@ -34,11 +35,11 @@ inputs_charts_regex = make_inputs_charts_regex(app_prefix, DEFAULT_CHARTS_REGEX)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 3), (inputs_charts_regex, 3), (inputs_after, 3), (inputs_before, 3), (inputs_opts, 6)])
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6)])
 
 # layout
 tabs = make_tabs(app_prefix, [('Clustered Heatmap', 'heatmap-clustered')])
-layout = html.Div([logo, main_menu, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
+layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
 @app.callback(
@@ -51,13 +52,15 @@ layout = html.Div([logo, main_menu, inputs, tabs, make_figs(f'{app_prefix}-figs'
     State(f'{app_prefix}-input-before', 'value'),
     State(f'{app_prefix}-input-opts', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1200'):
+def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1200', thold=None, norm='True'):
 
     figs = []
 
     opts = process_opts(opts)
     freq = opts.get('freq', freq)
     w = int(opts.get('w', w))
+    thold = opts.get('thold', thold)
+    norm = bool(opts.get('norm', norm))
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='cp-fig', figure=make_empty_fig())))
@@ -71,8 +74,16 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='10s', w='1
         df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
         # lets resample to a specific frequency
         df = df.resample(freq).mean()
+        # apply thold if specified
+        if thold:
+            df = pd.DataFrame(
+                data=np.where(df >= float(thold), 1, 0),
+                columns=df.columns,
+                index=df.index
+            )
         # lets min-max normalize our data so metrics can be compared on a heatmap
-        df = (df - df.min()) / (df.max() - df.min())
+        if norm:
+            df = (df - df.min()) / (df.max() - df.min())
         # drop na cols
         df = df.dropna(how='all', axis=1)
         # lets do some clustering to sort similar cols

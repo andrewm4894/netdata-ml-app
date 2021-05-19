@@ -9,3 +9,5 @@ services:
       .
     ports:
       - "29999:29999"
+    env_file:
+      - .env

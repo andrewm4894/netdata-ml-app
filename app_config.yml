@@ -1,12 +1,5 @@
 # hosts to make available to the app
 hosts:
-  - 'london.my-netdata.io'
-  - 'cdn77.my-netdata.io'
-  - 'bangalore.my-netdata.io'
-  - 'frankfurt.my-netdata.io'
-  - 'newyork.my-netdata.io'
-  - 'sanfrancisco.my-netdata.io'
-  - 'singapore.my-netdata.io'
-  - 'toronto.my-netdata.io'
+#  - 'london.my-netdata.io'
 # if you want to scrape each host and include its children
 scrape_children: 'no'

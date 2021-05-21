@@ -6,10 +6,9 @@ Netdata ML App
 Docker run command:
 
 ```
-docker run -d --name=netdata-mlapp \
+docker run -d --network="host" --name=netdata-mlapp \
   -p 29999:29999 \
-  --env NETDATAMLAPP_HOSTS=newyork.my-netdata.io \ 
-  --env NETDATAMLAPP_SCRAPE_CHILDREN=yes \ 
+  --env NETDATAMLAPP_HOSTS=127.0.0.1:19999 \
   --restart unless-stopped \
   andrewm4894/netdata-mlapp
 ```

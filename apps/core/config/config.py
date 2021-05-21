@@ -8,7 +8,7 @@ from app import app
 load_dotenv()
 
 DEFAULT_APP_CONFIG = {
-    'hosts': ['london.my-netdata.io'],
+    'hosts': [],
     'scrape_children': 'no'
 }
 

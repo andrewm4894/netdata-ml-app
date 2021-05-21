@@ -1,5 +1,5 @@
 # hosts to make available to the app
 hosts:
-#  - 'london.my-netdata.io'
+  - 'london.my-netdata.io'
 # if you want to scrape each host and include its children
 scrape_children: 'no'

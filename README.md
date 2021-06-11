@@ -1,5 +1,5 @@
 ![logo](assets/logo.svg)  
-`Experimental Machine Learning App`
+`Experimental Machine Learning Application`
 
 # netdata-ml-app
 Netdata ML App - A collection of [dash](https://plotly.com/dash/) based python apps that will take in a netdata host ip and some input parameters, pull the data from the host, crunch it and display you some results depending on each specific app. 

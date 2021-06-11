@@ -59,6 +59,8 @@ pipenv shell
 python index.py
 ```
 
+The app should now be running on port 29999. 
+
 ## Configuration
 
 ### Environment Variables

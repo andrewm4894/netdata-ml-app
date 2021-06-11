@@ -23,7 +23,7 @@ from apps.help.popup_metrics_model import help
 
 # defaults
 app_prefix = 'mm'
-DEFAULT_OPTS = 'top_n=10,n_estimators=100,max_depth=3,protocol=https,smooth_n=10,freq=1s,std_threshold=0.01'
+DEFAULT_OPTS = 'top_n=10,n_estimators=100,max_depth=3,smooth_n=10,freq=1s,std_threshold=0.01'
 DEFAULT_TARGET = 'system.cpu|user'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=5), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
@@ -56,7 +56,7 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-opts', 'value'),
 )
 def run(n_clicks, tab, host, target, after, before, opts='',
-        top_n='10', protocol='https', freq='1s', smooth_n=10, n_estimators=100, max_depth=3,
+        top_n='10', protocol='http', freq='1s', smooth_n=10, n_estimators=100, max_depth=3,
         std_threshold=0.01, lw=1):
 
     # define some global variables and state change helpers

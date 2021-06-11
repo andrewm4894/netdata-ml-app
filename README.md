@@ -24,13 +24,13 @@ Each app focuses on a particular use case:
 ## Using Docker
 
 Docker pull command:
-```
+```bash
 docker image pull andrewm4894/netdata-mlapp 
 ```
 
 Docker run command:
 
-```
+```bash
 docker run -d --network="host" --name=netdata-mlapp \
   -p 29999:29999 \
   --env NETDATAMLAPP_HOSTS=127.0.0.1:19999 \
@@ -40,13 +40,13 @@ docker run -d --network="host" --name=netdata-mlapp \
 
 To get logs:
 
-```
+```bash
 docker logs netdata-mlapp
 ```
 
 ## Running locally
 
-```
+```bash
 # clone the repo
 git clone https://github.com/andrewm4894/netdata-ml-app.git
 # cd into folder

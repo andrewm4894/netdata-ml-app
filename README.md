@@ -1,11 +1,15 @@
-![logo](assets/logo.svg)
+![logo](assets/logo.svg)  
+`Experimental Machine Learning Application`
 
 # netdata-ml-app
-Netdata ML App - A collection of [dash](https://plotly.com/dash/) based python apps that will take in a netdata host ip and some input parameters, pull the data from the host, crunch it and display you some results depending on each specific app. 
+__Netdata ML App__ - A collection of [dash](https://plotly.com/dash/) based python apps that will take in a netdata host ip and some input parameters, pull the data from the host, crunch it, and display some results. 
 
 This is all experimental and nowhere near stable yet, but you might find something interesting in your data so why not play around and see :) 
 
 ### Apps
+
+Each app focuses on a particular use case: 
+
 - __Metrics Explorer__: You give it a list of metrics you are interested in, and it will plot them together in various ways.
 - __Changepoint Detection__: Look over a subset of charts to find which metrics have obvious ['changepoints'](https://en.wikipedia.org/wiki/Change_detection) within a window of interest.
 - __Clustered Heatmap__: A heatmap of your metrics from netdata, overed by a clustering algorithm to group similar 'looking' metrics together.
@@ -17,7 +21,7 @@ This is all experimental and nowhere near stable yet, but you might find somethi
 - __Matrix Profile Anomalies__: Use a [matrix profile](https://matrixprofile.org/#:~:text=The%20matrix%20profile%20is%20a,scalable%20and%20largely%20parameter%2Dfree.) driven approach to detect which metrics might be most anomalous.
 - __Metric Model__: Given a metric of interest, build a predictive model of that metric - how good is that model and what other metrics are important to it? This could be another way to find some evidence of what other metrics might be 'driving' some metric you are interested in.
 
-## Docker
+## Using Docker
 
 Docker pull command:
 ```
@@ -38,6 +42,21 @@ To get logs:
 
 ```
 docker logs netdata-mlapp
+```
+
+## Running locally
+
+```
+# clone the repo
+git clone https://github.com/andrewm4894/netdata-ml-app.git
+# cd into folder
+cd netdata-ml-app
+# create a virtual env using something like pipenv
+pipenv install
+# activate the virtual env
+pipenv shell
+# launch the app
+python index.py
 ```
 
 ## Configuration

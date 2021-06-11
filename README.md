@@ -2,11 +2,14 @@
 `Experimental Machine Learning Application`
 
 # netdata-ml-app
-Netdata ML App - A collection of [dash](https://plotly.com/dash/) based python apps that will take in a netdata host ip and some input parameters, pull the data from the host, crunch it and display you some results depending on each specific app. 
+__Netdata ML App__ - A collection of [dash](https://plotly.com/dash/) based python apps that will take in a netdata host ip and some input parameters, pull the data from the host, crunch it, and display some results. 
 
 This is all experimental and nowhere near stable yet, but you might find something interesting in your data so why not play around and see :) 
 
 ### Apps
+
+Each app focuses on a particular use case: 
+
 - __Metrics Explorer__: You give it a list of metrics you are interested in, and it will plot them together in various ways.
 - __Changepoint Detection__: Look over a subset of charts to find which metrics have obvious ['changepoints'](https://en.wikipedia.org/wiki/Change_detection) within a window of interest.
 - __Clustered Heatmap__: A heatmap of your metrics from netdata, overed by a clustering algorithm to group similar 'looking' metrics together.

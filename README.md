@@ -6,6 +6,10 @@ __Netdata ML App__ - A collection of [dash](https://plotly.com/dash/) based pyth
 
 This is all experimental and nowhere near stable yet, but you might find something interesting in your data so why not play around and see :) 
 
+Click below to play with the latest version of the app, deployed to Heroku, configured to use data from our demo servers:
+
+https://netdata-ml-app.herokuapp.com/
+
 ### Apps
 
 Each app focuses on a particular use case: 

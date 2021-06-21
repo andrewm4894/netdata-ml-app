@@ -26,6 +26,11 @@ jobs:
           context: .
           push: true
           tags: andrewm4894/netdata-ml-app:latest
+  heroku:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Heroku Login
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import warnings
+from datetime import datetime
 from netdata_pandas.data import get_data
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -17,8 +18,8 @@ class Clusterer:
                  max_n: int = 100, min_qs: float = 0.5):
         self.hosts = hosts
         self.charts_regex = charts_regex
-        self.after = after
-        self.before = before
+        self.after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
+        self.before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
         self.diff = diff
         self.norm = norm
         self.smooth_n = smooth_n

@@ -39,6 +39,7 @@ jobs:
         env:
           PORT: 29999
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          NETDATAMLAPP_HOSTS=london: "london.my-netdata.io,newyork.my-netdata.io"
         run: heroku container:push -a netdata-ml-app web
       - name: Heroku release
         env:

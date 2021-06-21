@@ -38,7 +38,7 @@ jobs:
       - name: Heroku config
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku config:set NETDATAMLAPP_HOSTS=london.my-netdata.io,newyork.my-netdata.io
+        run: heroku config:set -a netdata-ml-app NETDATAMLAPP_HOSTS=london.my-netdata.io,newyork.my-netdata.io
       - name: Heroku Build and push
         env:
           PORT: 29999

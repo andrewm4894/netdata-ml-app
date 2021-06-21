@@ -30,7 +30,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: andrewm4894/netdata-mlapp:latest
+          tags: andrewm4894/netdata-ml-app:latest
       - name: Heroku Login
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
@@ -38,8 +38,8 @@ jobs:
       - name: Heroku Build and push
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:push -a netdata-mlapp web
+        run: heroku container:push -a netdata-ml-app web
       - name: Heroku release
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku container:release -a netdata-mlapp web
+        run: heroku container:release -a netdata-ml-app web

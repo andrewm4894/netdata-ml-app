@@ -25,23 +25,23 @@ Each app focuses on a particular use case:
 
 Docker pull command:
 ```bash
-docker image pull andrewm4894/netdata-mlapp 
+docker image pull andrewm4894/netdata-ml-app 
 ```
 
 Docker run command:
 
 ```bash
-docker run -d --network="host" --name=netdata-mlapp \
+docker run -d --network="host" --name=netdata-ml-app \
   -p 29999:29999 \
   --env NETDATAMLAPP_HOSTS=127.0.0.1:19999 \
   --restart unless-stopped \
-  andrewm4894/netdata-mlapp
+  andrewm4894/netdata-ml-app
 ```
 
 To get logs:
 
 ```bash
-docker logs netdata-mlapp
+docker logs netdata-ml-app
 ```
 
 ## Running locally

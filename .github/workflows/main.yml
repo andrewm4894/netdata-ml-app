@@ -41,12 +41,10 @@ jobs:
         run: heroku config:set -a netdata-ml-app NETDATAMLAPP_HOSTS=london.my-netdata.io,newyork.my-netdata.io
       - name: Heroku Build and push
         env:
-          PORT: 29999
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: heroku container:push -a netdata-ml-app web
       - name: Heroku release
         env:
           PORT: 29999
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          NETDATAMLAPP_HOSTS: "london.my-netdata.io,newyork.my-netdata.io"
         run: heroku container:release -a netdata-ml-app web

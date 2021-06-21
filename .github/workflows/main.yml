@@ -38,7 +38,7 @@ jobs:
       - name: Heroku config
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: heroku config:set -a netdata-ml-app NETDATAMLAPP_HOSTS=london.my-netdata.io,newyork.my-netdata.io
+        run: heroku config:set -a netdata-ml-app NETDATAMLAPP_HOSTS=london.my-netdata.io,cdn77.my-netdata.io,newyork.my-netdata.io,octopuscs.my-netdata.io,bangalore.my-netdata.io,frankfurt.my-netdata.io
       - name: Heroku Build and push
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}

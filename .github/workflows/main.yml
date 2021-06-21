@@ -31,11 +31,3 @@ jobs:
           context: .
           push: true
           tags: andrewm4894/netdata-mlapp:latest
-      -
-        name: Deploy to heroku
-        uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-            heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-            heroku_app_name: "netdata-ml-app"
-            heroku_email: "andrewm4894@gmail.com"
-            usedocker: true

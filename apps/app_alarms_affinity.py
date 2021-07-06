@@ -10,7 +10,8 @@ from app import app
 from apps.core.data.core import make_table
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
-from apps.core.utils.inputs import make_main_menu, make_inputs_host, make_inputs_opts, make_inputs_generic, make_inputs
+from apps.core.utils.inputs import make_main_menu, make_inputs_host, make_inputs_opts, make_inputs_generic, make_inputs, \
+    make_inputs_netdata_url
 from apps.core.utils.utils import process_opts
 from apps.core.alarms_affinity.core import process_basket, make_baskets, itemsets_tooltips, rules_tooltips
 from apps.help.popup_alarms_affinity import help
@@ -31,7 +32,8 @@ inputs_last_n = make_inputs_generic(
     tooltip_text='How many recent alarms to include, regardless of when they occurred', label_text='last n'
 )
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 3), (inputs_hours_ago, 2), (inputs_last_n, 2), (inputs_opts, 3), (html.Div(''), 2)])
+inputs_netdata_url = make_inputs_netdata_url(app_prefix)
+inputs = make_inputs([(inputs_host, 3), (inputs_hours_ago, 2), (inputs_last_n, 2), (inputs_opts, 3), (html.Div(''), 2), (inputs_netdata_url, 12)])
 
 # layout
 tabs = dbc.Tabs(

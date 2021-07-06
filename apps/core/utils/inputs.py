@@ -101,6 +101,19 @@ def make_inputs_opts(prefix, default_opts, tooltip_text='List of optional key va
     return inputs_opts
 
 
+def make_inputs_netdata_url(prefix, default_netdata_url='', tooltip_text='Url of interest from a netdata dashboard.',
+                     label_text='netdata url'):
+    inputs_netdata_url = dbc.FormGroup(
+        [
+            dbc.Label(label_text, id=f'{prefix}-label-netdata-url', html_for=f'{prefix}-input-netdata-url',
+                      style={'margin': '4px', 'padding': '0px'}),
+            dbc.Input(id=f'{prefix}-input-netdata-url', value=default_netdata_url, type='text', placeholder=default_netdata_url),
+            dbc.Tooltip(tooltip_text, target=f'{prefix}-label-netdata-url')
+        ]
+    )
+    return inputs_netdata_url
+
+
 def make_inputs(inputs_list):
     return dbc.Row(
         [dbc.Col(i[0], width=i[1]) for i in inputs_list], style={'margin': '0px', 'padding': '0px'}

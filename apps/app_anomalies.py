@@ -15,7 +15,7 @@ from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
 from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_charts_regex, make_inputs_after, make_inputs_before,
-    make_inputs_opts, make_inputs, make_tabs, make_figs
+    make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url
 )
 from apps.core.utils.utils import process_opts, get_reference_timedelta, get_ref_windows
 from apps.core.anomalies.core import make_features, build_models, cluster_sort
@@ -35,8 +35,9 @@ inputs_charts_regex = make_inputs_charts_regex(app_prefix, DEFAULT_CHARTS_REGEX)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
+inputs_netdata_url = make_inputs_netdata_url(app_prefix)
 inputs = make_inputs(
-    [(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6)])
+    [(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6), (inputs_netdata_url, 12)])
 
 # layout
 tabs = make_tabs(

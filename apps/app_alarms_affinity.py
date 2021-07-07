@@ -64,8 +64,9 @@ layout = html.Div(
     State('al-input-hours-ago', 'value'),
     State('al-input-last-n', 'value'),
     State('al-input-opts', 'value'),
+    State(f'{app_prefix}-input-netdata-url', 'value'),
 )
-def run(n_clicks, tab, host, hours_ago, last_n, opts='', window='1m', max_n=500, min_support=0.1, min_threshold=0.1):
+def run(n_clicks, tab, host, hours_ago, last_n, opts='', netdata_url='', window='1m', max_n=500, min_support=0.1, min_threshold=0.1, max_points=1000):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current

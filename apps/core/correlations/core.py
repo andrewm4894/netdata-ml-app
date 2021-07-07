@@ -4,8 +4,8 @@ import numpy as np
 from netdata_pandas.data import get_data
 
 
-def get_df_corr(hosts, charts_regex, after, before, index_as_datetime, freq):
-    df = get_data(hosts=hosts, charts_regex=charts_regex, after=after, before=before, index_as_datetime=index_as_datetime)
+def get_df_corr(hosts, charts_regex, after, before, index_as_datetime, freq, points):
+    df = get_data(hosts=hosts, charts_regex=charts_regex, after=after, before=before, index_as_datetime=index_as_datetime, points=points)
     df = df.resample(freq).mean()
     df = df.corr().dropna(axis=0, how='all').dropna(axis=1, how='all')
 

@@ -4,7 +4,7 @@
 from urllib.parse import urlparse as up
 
 
-def parse_netdata_url(url):
+def xxparse_netdata_url(url):
     url_parsed = up(url)
     url_dict = {
         'host': url_parsed.hostname,

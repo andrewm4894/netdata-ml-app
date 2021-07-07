@@ -23,7 +23,7 @@ from apps.help.popup_metrics_explorer import help
 
 # defaults
 app_prefix = 'me'
-DEFAULT_OPTS = 'smooth_n=15'
+DEFAULT_OPTS = 'smooth_n=15,max_points=1000'
 DEFAULT_METRICS = 'system.cpu|user,system.cpu|system,system.ram|free,system.net|sent,system.load|load1,system.ip|sent,system.ip|received,system.intr|interrupts,system.processes|running,system.forks|started,system.io|out'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
@@ -55,7 +55,7 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-netdata-url', 'value'),
 )
 def run(n_clicks, tab, host, metrics, after, before, opts='', netdata_url='',
-        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True'):
+        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True', max_points=1000):
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
     global df
@@ -67,7 +67,7 @@ def run(n_clicks, tab, host, metrics, after, before, opts='', netdata_url='',
             has_state_changed = True
         is_initial_run = False
     if 'inputs_previous' in globals():
-        if inputs_current['me-btn-run.n_clicks'] > inputs_previous['me-btn-run.n_clicks']:
+        if inputs_current[f'{app_prefix}-btn-run.n_clicks'] > inputs_previous[f'{app_prefix}-btn-run.n_clicks']:
             was_button_clicked = True
     recalculate = True if was_button_clicked or is_initial_run or has_state_changed else False
 
@@ -81,22 +81,24 @@ def run(n_clicks, tab, host, metrics, after, before, opts='', netdata_url='',
     lw = int(opts.get('lw', lw))
     legend = True if opts.get('legend', legend).lower() == 'true' else False
     diff = True if opts.get('diff', diff).lower() == 'true' else False
+    max_points = int(opts.get('max_points', max_points))
     after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
     before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
+    points = min(before-after, max_points)
     netdata_url_dict = parse_netdata_url(netdata_url)
     after = netdata_url_dict.get('after', after)
     before = netdata_url_dict.get('before', before)
     host = netdata_url_dict.get('host', host)
 
     if n_clicks == 0:
-        figs.append(html.Div(dcc.Graph(id='me-fig-empty', figure=make_empty_fig())))
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-empty', figure=make_empty_fig())))
         return figs
 
     if recalculate:
 
         metrics = metrics.split(',')
         charts = list(set([m.split('|')[0] for m in metrics]))
-        df = get_data(hosts=[host], charts=charts, after=after, before=before, index_as_datetime=True)
+        df = get_data(hosts=[host], charts=charts, after=after, before=before, index_as_datetime=True, points=points)
         df = df[metrics]
         if smooth_n >= 1:
             df = smooth_df(df, smooth_n)

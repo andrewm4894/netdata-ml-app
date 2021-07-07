@@ -159,15 +159,23 @@ def make_card(button, text, logo):
 
 
 def parse_netdata_url(url):
-    url_parsed = urlparse(url)
-    url_dict = {
-        'host': url_parsed.hostname,
-        'fragments': {frag.split('=')[0]: frag.split('=')[1] for frag in url_parsed.fragment.split(';') if '=' in frag}
-    }
+    if url.startswith('http'):
+        url_parsed = urlparse(url)
+        url_dict = {
+            'host': url_parsed.hostname,
+            'fragments': {frag.split('=')[0]: frag.split('=')[1] for frag in url_parsed.fragment.split(';') if '=' in frag}
+        }
+    else:
+        url_dict = {
+            'fragments': {frag.split('=')[0]: frag.split('=')[1] for frag in url.split(';') if
+                          '=' in frag}
+        }
+
     if 'after' in url_dict['fragments']:
-        url_dict['after'] = int(int(url_dict['fragments']['after'])/1000)
+        url_dict['after'] = int(int(url_dict['fragments']['after']) / 1000)
     if 'before' in url_dict['fragments']:
-        url_dict['before'] = int(int(url_dict['fragments']['before'])/1000)
+        url_dict['before'] = int(int(url_dict['fragments']['before']) / 1000)
+
     return url_dict
 
 

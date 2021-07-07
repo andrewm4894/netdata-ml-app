@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
+from urllib.parse import urlparse
 
 from app import app
 from apps.core.config.config import get_config
@@ -155,3 +156,18 @@ def make_card(button, text, logo):
         style={"margin": "4px", "padding": "4px"},
     )
     return card
+
+
+def parse_netdata_url(url):
+    url_parsed = urlparse(url)
+    url_dict = {
+        'host': url_parsed.hostname,
+        'fragments': {frag.split('=')[0]: frag.split('=')[1] for frag in url_parsed.fragment.split(';') if '=' in frag}
+    }
+    if 'after' in url_dict['fragments']:
+        url_dict['after'] = int(int(url_dict['fragments']['after'])/1000)
+    if 'before' in url_dict['fragments']:
+        url_dict['before'] = int(int(url_dict['fragments']['before'])/1000)
+    return url_dict
+
+

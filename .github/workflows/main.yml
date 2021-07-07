@@ -20,12 +20,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      #- name: DockerHub build and push
-      #  uses: docker/build-push-action@v2
-      #  with:
-      #    context: .
-      #    push: true
-      #    tags: andrewm4894/netdata-ml-app:latest
+      - name: DockerHub build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: andrewm4894/netdata-ml-app:latest
       - name: Set outputs
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"

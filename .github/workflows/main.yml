@@ -20,12 +20,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: DockerHub build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: andrewm4894/netdata-ml-app:latest
+      #- name: DockerHub build and push
+      #  uses: docker/build-push-action@v2
+      #  with:
+      #    context: .
+      #    push: true
+      #    tags: andrewm4894/netdata-ml-app:latest
       - name: DockerHub build and push commit tag
         env:
           GIT_COMMIT: $(git rev-parse --short HEAD)
@@ -33,7 +33,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: andrewm4894/netdata-ml-app:commit-${{ env.GIT_COMMIT }}
+          tags: andrewm4894/netdata-ml-app:commit-$(git rev-parse --short HEAD)
   heroku:
     runs-on: ubuntu-latest
     steps:

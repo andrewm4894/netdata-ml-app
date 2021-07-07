@@ -16,7 +16,7 @@ from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
 from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_charts_regex, make_inputs_after, make_inputs_before,
-    make_inputs_opts, make_inputs, make_tabs, make_figs
+    make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url, parse_netdata_url
 )
 from apps.core.utils.utils import process_opts
 from apps.help.popup_mp_anomalies import help
@@ -36,7 +36,8 @@ inputs_charts_regex = make_inputs_charts_regex(app_prefix, DEFAULT_CHARTS_REGEX)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
-inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6)])
+inputs_netdata_url = make_inputs_netdata_url(app_prefix)
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6), (inputs_netdata_url, 12)])
 
 # layout
 tabs = make_tabs(app_prefix, [('Anomalies', 'anomalies')])
@@ -52,8 +53,9 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-after', 'value'),
     State(f'{app_prefix}-input-before', 'value'),
     State(f'{app_prefix}-input-opts', 'value'),
+    State(f'{app_prefix}-input-netdata-url', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='15s', m=30, n_results=100, lw=1):
+def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='', freq='15s', m=30, n_results=100, lw=1, max_points=1000):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
@@ -77,6 +79,14 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='15s', m=30
     m = int(opts.get('m', m))
     n_results = int(opts.get('n_results', n_results))
     lw = int(opts.get('lw', lw))
+    max_points = int(opts.get('max_points', max_points))
+    after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
+    before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
+    points = min(before - after, max_points)
+    netdata_url_dict = parse_netdata_url(netdata_url)
+    after = netdata_url_dict.get('after', after)
+    before = netdata_url_dict.get('before', before)
+    host = netdata_url_dict.get('host', host)
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='mp-fig', figure=make_empty_fig())))
@@ -84,9 +94,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts, freq='15s', m=30
 
     if recalculate:
 
-        after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
-        before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
-        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True)
+        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points)
         if freq:
             df = df.resample(freq).mean()
 

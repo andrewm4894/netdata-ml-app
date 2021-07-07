@@ -13,14 +13,15 @@ class Clusterer:
     """
 
     def __init__(self,
-                 hosts: list, charts_regex: str, after: int, before: int, diff: bool = False, norm: bool = True,
+                 hosts: list, charts_regex: str, after: int, before: int, points: int, diff: bool = False, norm: bool = True,
                  smooth_n: int = 5, smooth_func: str = 'mean', n_clusters: int = 10, min_n: int = 3,
                  max_n: int = 100, min_qs: float = 0.5):
         self.hosts = hosts
         self.charts_regex = charts_regex
-        self.after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
-        self.before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
+        self.after = after
+        self.before = before
         self.diff = diff
+        self.points = points
         self.norm = norm
         self.smooth_n = smooth_n
         self.smooth_func = smooth_func
@@ -33,7 +34,7 @@ class Clusterer:
     def get_data(self):
         """
         """
-        self.df = get_data(self.hosts, charts_regex=self.charts_regex, after=self.after, before=self.before, user=None, pwd=None)
+        self.df = get_data(self.hosts, charts_regex=self.charts_regex, after=self.after, before=self.before, user=None, pwd=None, points=self.points)
         # remove duplicate columns that we might get from get_data()
         self.df = self.df.loc[:, ~self.df.columns.duplicated()]
         # drop any empty columns

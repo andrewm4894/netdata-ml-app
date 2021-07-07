@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
+from urllib.parse import urlparse
 
 from app import app
 from apps.core.config.config import get_config
@@ -101,6 +102,19 @@ def make_inputs_opts(prefix, default_opts, tooltip_text='List of optional key va
     return inputs_opts
 
 
+def make_inputs_netdata_url(prefix, default_netdata_url='', tooltip_text='Url of interest from a netdata dashboard.',
+                     label_text='netdata url'):
+    inputs_netdata_url = dbc.FormGroup(
+        [
+            dbc.Label(label_text, id=f'{prefix}-label-netdata-url', html_for=f'{prefix}-input-netdata-url',
+                      style={'margin': '4px', 'padding': '0px'}),
+            dbc.Input(id=f'{prefix}-input-netdata-url', value=default_netdata_url, type='text', placeholder=default_netdata_url),
+            dbc.Tooltip(tooltip_text, target=f'{prefix}-label-netdata-url')
+        ]
+    )
+    return inputs_netdata_url
+
+
 def make_inputs(inputs_list):
     return dbc.Row(
         [dbc.Col(i[0], width=i[1]) for i in inputs_list], style={'margin': '0px', 'padding': '0px'}
@@ -142,3 +156,26 @@ def make_card(button, text, logo):
         style={"margin": "4px", "padding": "4px"},
     )
     return card
+
+
+def parse_netdata_url(url):
+    if url.startswith('http'):
+        url_parsed = urlparse(url)
+        url_dict = {
+            'host': url_parsed.hostname,
+            'fragments': {frag.split('=')[0]: frag.split('=')[1] for frag in url_parsed.fragment.split(';') if '=' in frag}
+        }
+    else:
+        url_dict = {
+            'fragments': {frag.split('=')[0]: frag.split('=')[1] for frag in url.split(';') if
+                          '=' in frag}
+        }
+
+    if 'after' in url_dict['fragments']:
+        url_dict['after'] = int(int(url_dict['fragments']['after']) / 1000)
+    if 'before' in url_dict['fragments']:
+        url_dict['before'] = int(int(url_dict['fragments']['before']) / 1000)
+
+    return url_dict
+
+

@@ -58,6 +58,11 @@ card_metrics_model = make_card(
     '`Build a predictive model for a metrics of interest.`',
     'metrics_model_logo.png'
 )
+card_anomaly_bit = make_card(
+    dbc.Button(dcc.Markdown('`Anomaly Bit`'), href='/anomaly-bit', style={'height': '40px'}, outline=True),
+    '`Sort charts by Anomaly Bit.`',
+    'anomaly_bit_logo.png'
+)
 cards = dbc.CardColumns([
     card_metrics_explorer,
     card_changepoints,
@@ -68,7 +73,8 @@ cards = dbc.CardColumns([
     card_correlations,
     card_anomalies,
     card_mp_anomalies,
-    card_metrics_model
+    card_metrics_model,
+    card_anomaly_bit
 ], style=DEFAULT_STYLE)
 
 # make layout

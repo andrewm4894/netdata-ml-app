@@ -11,10 +11,12 @@ from app import app
 from apps import (
     app_home, app_clustering, app_heatmap, app_percentiles,
     app_alarms_affinity, app_changepoints, app_metrics_explorer,
-    app_correlations, app_anomalies, app_mp_anomalies, app_metrics_model
+    app_correlations, app_anomalies, app_mp_anomalies, app_metrics_model, app_anomaly_bit
 )
-from apps.help import help_metrics_model, help_alarms_affinity, help_anomalies, help_changepoints, help_clustering, \
-    help_correlations, help_heatmap, help_metrics_explorer, help_mp_anomalies, help_percentiles
+from apps.help import (
+    help_metrics_model, help_alarms_affinity, help_anomalies, help_changepoints, help_clustering,
+    help_correlations, help_heatmap, help_metrics_explorer, help_mp_anomalies, help_percentiles, help_anomaly_bit
+)
 
 server = app.server
 app.layout = html.Div([
@@ -47,6 +49,8 @@ def display_page(pathname):
         return app_mp_anomalies.layout
     elif pathname == '/metrics-model':
         return app_metrics_model.layout
+    elif pathname == '/anomaly-bit':
+        return app_anomaly_bit.layout
     # home
     elif pathname == '/':
         return app_home.layout
@@ -71,6 +75,8 @@ def display_page(pathname):
         return help_mp_anomalies.layout
     elif pathname == '/metrics-model-help':
         return help_metrics_model.layout
+    elif pathname == '/anomaly-bit-help':
+        return help_anomaly_bit.layout
     # 404
     else:
         return '404'

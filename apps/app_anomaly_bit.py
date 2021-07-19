@@ -12,7 +12,8 @@ from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
 from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_metrics, make_inputs_after, make_inputs_before,
-    make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url, parse_netdata_url
+    make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url, parse_netdata_url,
+    make_inputs_charts_regex
 )
 from apps.core.utils.utils import process_opts
 from apps.core.plots.lines import plot_lines, plot_lines_grid
@@ -24,19 +25,19 @@ from apps.help.popup_metrics_explorer import help
 # defaults
 app_prefix = 'ab'
 DEFAULT_OPTS = 'smooth_n=5,max_points=1000'
-DEFAULT_METRICS = 'system.*'
+DEFAULT_CHARTS_REGEX = '\.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
 # inputs
 main_menu = make_main_menu(app_prefix)
 inputs_host = make_inputs_host(app_prefix)
-inputs_metrics = make_inputs_metrics(app_prefix, DEFAULT_METRICS)
+inputs_charts_regex = make_inputs_charts_regex(app_prefix, DEFAULT_CHARTS_REGEX)
 inputs_after = make_inputs_after(app_prefix, DEFAULT_AFTER)
 inputs_before = make_inputs_before(app_prefix, DEFAULT_BEFORE)
 inputs_opts = make_inputs_opts(app_prefix, DEFAULT_OPTS)
 inputs_netdata_url = make_inputs_netdata_url(app_prefix)
-inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_metrics, 6), (inputs_opts, 6), (inputs_netdata_url, 12)])
+inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6), (inputs_netdata_url, 12)])
 
 # layout
 tabs = make_tabs(app_prefix, [('Lines', 'ts-plots')])
@@ -48,13 +49,13 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     Input(f'{app_prefix}-btn-run', 'n_clicks'),
     Input(f'{app_prefix}-tabs', 'active_tab'),
     State(f'{app_prefix}-input-host', 'value'),
-    State(f'{app_prefix}-input-metrics', 'value'),
+    State(f'{app_prefix}-input-charts-regex', 'value'),
     State(f'{app_prefix}-input-after', 'value'),
     State(f'{app_prefix}-input-before', 'value'),
     State(f'{app_prefix}-input-opts', 'value'),
     State(f'{app_prefix}-input-netdata-url', 'value'),
 )
-def run(n_clicks, tab, host, metrics, after, before, opts='', netdata_url='',
+def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='',
         smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True', max_points=1000):
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
@@ -96,13 +97,10 @@ def run(n_clicks, tab, host, metrics, after, before, opts='', netdata_url='',
 
     if recalculate:
 
-        metrics = metrics.split(',')
-        charts = list(set([m.split('|')[0] for m in metrics]))
-        df = get_data(hosts=[host], charts=charts, after=after, before=before, index_as_datetime=True, points=points)
-        df_bit = get_data(hosts=[host], charts=charts, after=after, before=before, index_as_datetime=True, points=points, options='anomaly-bit')
-        df = df[metrics]
-        df_bit = df_bit[metrics] / 100
-        dim_rank = df_bit.mean().sort_values(ascending=False)
+        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points)
+        df_bit = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points, options='anomaly-bit')
+        df_bit = df_bit / 100
+        dim_rank = df_bit.mean().sort_values(ascending=False).head(20)
         if smooth_n >= 1:
             df = smooth_df(df, smooth_n)
             df_bit = smooth_df(df_bit, smooth_n)

@@ -1,18 +1,12 @@
 # used for playing with random dev code
 
 #%%
-from urllib.parse import urlparse as up
 
+from netdata_pandas.data import get_data
 
-def xxparse_netdata_url(url):
-    url_parsed = up(url)
-    url_dict = {
-        'host': url_parsed.hostname,
-        'fragments': {frag.split('=')[0]: frag.split('=')[1] for frag in url_parsed.fragment.split(';') if '=' in frag}
-    }
-    return url_dict
-
-url_dict = parse_netdata_url('http://london.my-netdata.io/#menu_system;after=1625674229000;before=1625674649000;theme=slate;help=true')
+#df = get_data(hosts='34.73.38.236:19999', points=10, charts_regex='system.*', options='anomaly-bit')
+df = get_data(hosts='34.73.38.236:19999', points=5, charts_regex='system.*')
+print(df.shape)
 
 
 #%%

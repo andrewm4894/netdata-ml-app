@@ -24,7 +24,7 @@ from apps.help.popup_metrics_explorer import help
 
 # defaults
 app_prefix = 'ab'
-DEFAULT_OPTS = 'smooth_n=5,max_points=1000'
+DEFAULT_OPTS = 'smooth_n=5,max_points=1000,top_n=25'
 DEFAULT_CHARTS_REGEX = '\.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
@@ -40,14 +40,12 @@ inputs_netdata_url = make_inputs_netdata_url(app_prefix)
 inputs = make_inputs([(inputs_host, 6), (inputs_after, 3), (inputs_before, 3), (inputs_charts_regex, 6), (inputs_opts, 6), (inputs_netdata_url, 12)])
 
 # layout
-tabs = make_tabs(app_prefix, [('Lines', 'ts-plots')])
-layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
+layout = html.Div([logo, main_menu, help, inputs, make_figs(f'{app_prefix}-figs')], style=DEFAULT_STYLE)
 
 
 @app.callback(
     Output(f'{app_prefix}-figs', 'children'),
     Input(f'{app_prefix}-btn-run', 'n_clicks'),
-    Input(f'{app_prefix}-tabs', 'active_tab'),
     State(f'{app_prefix}-input-host', 'value'),
     State(f'{app_prefix}-input-charts-regex', 'value'),
     State(f'{app_prefix}-input-after', 'value'),
@@ -55,8 +53,8 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-opts', 'value'),
     State(f'{app_prefix}-input-netdata-url', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='',
-        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True', max_points=1000):
+def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
+        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True', max_points=1000, top_n=25):
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
     global df
@@ -76,6 +74,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
 
     opts = process_opts(opts)
     smooth_n = int(opts.get('smooth_n', smooth_n))
+    top_n = int(opts.get('top_n', top_n))
     n_cols = int(opts.get('n_cols', n_cols))
     h = int(opts.get('h', h))
     w = int(opts.get('w', w))
@@ -100,7 +99,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
         df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points)
         df_bit = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points, options='anomaly-bit')
         df_bit = df_bit / 100
-        dim_rank = df_bit.mean().sort_values(ascending=False).head(20)
+        dim_rank = df_bit.mean().sort_values(ascending=False).head(top_n)
         if smooth_n >= 1:
             df = smooth_df(df, smooth_n)
             df_bit = smooth_df(df_bit, smooth_n)
@@ -108,14 +107,12 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
             df = df.diff()
             df_bit = df_bit.diff()
 
-    if tab == f'{app_prefix}-tab-ts-plots':
-
-        for col, ar in dim_rank.iteritems():
-            df_plot = normalize_df(df[[col]]).join(df_bit[[col]].add_suffix('_bit'))
-            fig = plot_lines(
-                df_plot, title=f'{col} (AR={round(ar,4)}%)', h=600, lw=lw, visible_legendonly=False, hide_y_axis=True,
-            )
-            figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-{col}-fig-ts-plot', figure=fig)))
+    for col, ar in dim_rank.iteritems():
+        df_plot = normalize_df(df[[col]]).join(df_bit[[col]].add_suffix('_bit'))
+        fig = plot_lines(
+            df_plot, title=f'{col} (anomaly rate={round(ar*100,2)}%)', h=600, lw=lw, visible_legendonly=False, hide_y_axis=True,
+        )
+        figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-{col}-fig-ts-plot', figure=fig)))
 
     states_previous = states_current
     inputs_previous = inputs_current

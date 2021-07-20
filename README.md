@@ -10,6 +10,8 @@ Click below to play with the latest version of the app, deployed to Heroku and c
 
 https://netdata-ml-app.herokuapp.com/
 
+https://netdata-ml-app-develop.herokuapp.com/
+
 ### Apps
 
 Each app focuses on a particular use case: 

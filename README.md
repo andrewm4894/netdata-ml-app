@@ -29,7 +29,7 @@ Each app focuses on a particular use case:
 
 Docker pull command:
 ```bash
-docker image pull andrewm4894/netdata-ml-app 
+docker image pull andrewm4894/netdata-ml-app:latest
 ```
 
 Docker run command:
@@ -39,8 +39,19 @@ docker run -d --network="host" --name=netdata-ml-app \
   -p 29999:29999 \
   --env NETDATAMLAPP_HOSTS=127.0.0.1:19999 \
   --restart unless-stopped \
-  andrewm4894/netdata-ml-app
+  andrewm4894/netdata-ml-app:latest
 ```
+
+Stop all running containers: 
+```
+docker stop $(docker ps -a -q)
+```
+
+Delete all stopped containers: 
+```
+docker rm $(docker ps -a -q)
+```
+
 
 To get logs:
 

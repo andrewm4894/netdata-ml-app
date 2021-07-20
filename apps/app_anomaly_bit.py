@@ -24,7 +24,7 @@ from apps.help.popup_metrics_explorer import help
 
 # defaults
 app_prefix = 'ab'
-DEFAULT_OPTS = 'smooth_n=5,max_points=1000,top_n=25'
+DEFAULT_OPTS = 'smooth_n=5,max_points=1000,top_n=25,max_ar=100'
 DEFAULT_CHARTS_REGEX = '\.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
@@ -54,7 +54,8 @@ layout = html.Div([logo, main_menu, help, inputs, make_figs(f'{app_prefix}-figs'
     State(f'{app_prefix}-input-netdata-url', 'value'),
 )
 def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
-        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True', max_points=1000, top_n=25):
+        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True', max_points=1000, top_n=25,
+        max_ar=100):
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
     global df
@@ -75,6 +76,7 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
     opts = process_opts(opts)
     smooth_n = int(opts.get('smooth_n', smooth_n))
     top_n = int(opts.get('top_n', top_n))
+    max_ar = int(opts.get('max_ar', max_ar))
     n_cols = int(opts.get('n_cols', n_cols))
     h = int(opts.get('h', h))
     w = int(opts.get('w', w))
@@ -99,7 +101,9 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
         df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points)
         df_bit = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points, options='anomaly-bit')
         df_bit = df_bit / 100
-        dim_rank = df_bit.mean().sort_values(ascending=False).head(top_n)
+        dim_rank = df_bit.mean().sort_values(ascending=False) * 100
+        dim_rank = dim_rank[dim_rank <= max_ar]
+        dim_rank = dim_rank.head(top_n)
         if smooth_n >= 1:
             df = smooth_df(df, smooth_n)
             df_bit = smooth_df(df_bit, smooth_n)
@@ -110,7 +114,7 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
     for col, ar in dim_rank.iteritems():
         df_plot = normalize_df(df[[col]]).join(df_bit[[col]].add_suffix('_bit'))
         fig = plot_lines(
-            df_plot, title=f'{col} (anomaly rate={round(ar*100,2)}%)', h=600, lw=lw, visible_legendonly=False, hide_y_axis=True,
+            df_plot, title=f'{col} (anomaly rate={round(ar,2)}%)', h=600, lw=lw, visible_legendonly=False, hide_y_axis=True,
         )
         figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-{col}-fig-ts-plot', figure=fig)))
 

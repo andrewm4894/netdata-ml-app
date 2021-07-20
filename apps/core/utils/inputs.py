@@ -163,6 +163,8 @@ def parse_netdata_url(url):
         url_parsed = urlparse(url)
         url_dict = {
             'host': url_parsed.hostname,
+            'port': url_parsed.port,
+            'host:port': f'{url_parsed.hostname}:{url_parsed.port}',
             'fragments': {frag.split('=')[0]: frag.split('=')[1] for frag in url_parsed.fragment.split(';') if '=' in frag}
         }
     else:

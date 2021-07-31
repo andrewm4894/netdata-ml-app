@@ -11,11 +11,13 @@ from app import app
 from apps import (
     app_home, app_clustering, app_heatmap, app_percentiles,
     app_alarms_affinity, app_changepoints, app_metrics_explorer,
-    app_correlations, app_anomalies, app_mp_anomalies, app_metrics_model, app_anomaly_bit
+    app_correlations, app_anomalies, app_mp_anomalies, app_metrics_model, app_anomaly_bit,
+    app_metrics_similarity
 )
 from apps.help import (
     help_metrics_model, help_alarms_affinity, help_anomalies, help_changepoints, help_clustering,
-    help_correlations, help_heatmap, help_metrics_explorer, help_mp_anomalies, help_percentiles, help_anomaly_bit
+    help_correlations, help_heatmap, help_metrics_explorer, help_mp_anomalies, help_percentiles, help_anomaly_bit,
+    help_metrics_similarity
 )
 
 server = app.server
@@ -49,6 +51,8 @@ def display_page(pathname):
         return app_mp_anomalies.layout
     elif pathname == '/metrics-model':
         return app_metrics_model.layout
+    elif pathname == '/metrics-similarity':
+        return app_metrics_similarity.layout
     elif pathname == '/anomaly-bit':
         return app_anomaly_bit.layout
     # home
@@ -77,6 +81,8 @@ def display_page(pathname):
         return help_metrics_model.layout
     elif pathname == '/anomaly-bit-help':
         return help_anomaly_bit.layout
+    elif pathname == '/metrics-similarity-help':
+        return help_metrics_similarity.layout
     # 404
     else:
         return '404'

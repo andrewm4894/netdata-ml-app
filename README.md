@@ -26,6 +26,7 @@ Each app focuses on a particular use case:
 - __Anomalies__: Given a reference window to train on, build some anomaly detection models to find any hotspots for anomalies within a window of interest.
 - __Matrix Profile Anomalies__: Use a [matrix profile](https://matrixprofile.org/#:~:text=The%20matrix%20profile%20is%20a,scalable%20and%20largely%20parameter%2Dfree.) driven approach to detect which metrics might be most anomalous.
 - __Metric Model__: Given a metric of interest, build a predictive model of that metric - how good is that model and what other metrics are important to it? This could be another way to find some evidence of what other metrics might be 'driving' some metric you are interested in.
+- __Metric Similarity__: Given a metric of interest, find the other most similar 'looking' metrics.
 
 ## Using Docker
 

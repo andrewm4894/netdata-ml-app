@@ -17,7 +17,7 @@ from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_generic, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url, parse_netdata_url
 )
-from apps.core.utils.utils import process_opts
+from apps.core.utils.utils import process_opts, log_inputs
 from apps.core.plots.lines import plot_lines_grid
 from apps.help.popup_metrics_model import help
 
@@ -94,7 +94,9 @@ def run(n_clicks, tab, host, target, after, before, opts='', netdata_url='',
     netdata_url_dict = parse_netdata_url(netdata_url) if netdata_url.startswith('http') else {}
     after = netdata_url_dict.get('after', after)
     before = netdata_url_dict.get('before', before)
-    host = netdata_url_dict.get('host', host)
+    host = netdata_url_dict.get('host:port', host)
+
+    log_inputs(app, host, after, before)
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-empty', figure=make_empty_fig())))

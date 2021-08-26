@@ -2,38 +2,15 @@
 
 #%%
 
-import pandas as pd
-import numpy as np
-from netdata_pandas.data import get_data
-from scipy.spatial.distance import cdist
-from am4894plots.plots import plot_lines_grid
+import re
 
-host = 'london.my-netdata.io'
-after = -60
-before = 0
-metric = 'system.cpu|user'
-top_n = 20
+url = 'http://34.73.124.145:19999/host/devml/#menu_ml_detector_info;after=1630005942000;before=1630006622000;theme=slate'
+#url = 'http://34.73.124.145:19999/#menu_ml_detector_info;after=1630005942000;before=1630006622000;theme=slate'
 
-df = get_data(hosts=[host], after=after, before=before, charts=['all'])
-df = (df-df.min())/(df.max()-df.min())
-df = df.fillna(0)
-print(df.shape)
+child_host = re.search('/host/(.*)/', url)
+child_host = child_host.group(1) if child_host else None
 
-df_dist = pd.DataFrame(
-    data=zip(df.columns, cdist(df[[metric]].fillna(0).transpose(), df.fillna(0).transpose(), 'cosine')[0]),
-    columns=['metric', 'distance']
-)
-df_dist['similarity'] = 1 - df_dist['distance']
-df_dist['rank'] = df_dist['similarity'].rank(ascending=False)
-df_dist = df_dist.sort_values('rank')
-
-plot_cols = df_dist.head(top_n)['metric'].values.tolist()
-plot_lines_grid(
-    df,
-    plot_cols,
-    h_each=200, legend=False, yaxes_visible=False, xaxes_visible=False,
-    subplot_titles=[f'{x[0]} ({round(x[1],2)})' for x in df_dist.head(top_n)[['metric', 'similarity']].values.tolist()]
-)
+print(child_host)
 
 
 #%%

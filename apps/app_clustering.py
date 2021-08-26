@@ -14,7 +14,7 @@ from apps.core.utils.inputs import (
 )
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
-from apps.core.utils.utils import process_opts
+from apps.core.utils.utils import process_opts, log_inputs
 from apps.core.clustering.core import Clusterer
 from apps.core.plots.lines import plot_lines, plot_lines_grid
 from apps.help.popup_clustering import help
@@ -80,7 +80,9 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     netdata_url_dict = parse_netdata_url(netdata_url)
     after = netdata_url_dict.get('after', after)
     before = netdata_url_dict.get('before', before)
-    host = netdata_url_dict.get('host', host)
+    host = netdata_url_dict.get('host:port', host)
+
+    log_inputs(app, host, after, before)
 
     figs = []
 

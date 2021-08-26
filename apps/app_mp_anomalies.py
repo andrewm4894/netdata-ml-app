@@ -18,7 +18,7 @@ from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_charts_regex, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url, parse_netdata_url
 )
-from apps.core.utils.utils import process_opts
+from apps.core.utils.utils import process_opts, log_inputs
 from apps.help.popup_mp_anomalies import help
 
 # defaults
@@ -86,7 +86,9 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     netdata_url_dict = parse_netdata_url(netdata_url)
     after = netdata_url_dict.get('after', after)
     before = netdata_url_dict.get('before', before)
-    host = netdata_url_dict.get('host', host)
+    host = netdata_url_dict.get('host:port', host)
+
+    log_inputs(app, host, after, before)
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='mp-fig', figure=make_empty_fig())))

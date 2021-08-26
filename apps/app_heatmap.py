@@ -17,7 +17,7 @@ from apps.core.utils.inputs import (
     make_main_menu, make_inputs_host, make_inputs_charts_regex, make_inputs_after, make_inputs_before,
     make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url, parse_netdata_url
 )
-from apps.core.utils.utils import process_opts
+from apps.core.utils.utils import process_opts, log_inputs
 from apps.help.popup_heatmap import help
 
 # defaults
@@ -54,7 +54,8 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-opts', 'value'),
     State(f'{app_prefix}-input-netdata-url', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='', freq='10s', w='1200', thold=None, norm='True', max_points=1000):
+def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='', freq='10s', w='1200', thold=None,
+        norm='True', max_points=1000, options=''):
 
     figs = []
 
@@ -62,6 +63,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     freq = opts.get('freq', freq)
     w = int(opts.get('w', w))
     thold = opts.get('thold', thold)
+    options = opts.get('options', options)
     norm = bool(opts.get('norm', norm))
     max_points = int(opts.get('max_points', max_points))
     after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
@@ -70,7 +72,9 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     netdata_url_dict = parse_netdata_url(netdata_url)
     after = netdata_url_dict.get('after', after)
     before = netdata_url_dict.get('before', before)
-    host = netdata_url_dict.get('host', host)
+    host = netdata_url_dict.get('host:port', host)
+
+    log_inputs(app, host, after, before)
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='cp-fig', figure=make_empty_fig())))
@@ -79,7 +83,8 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     else:
 
         # get data
-        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points)
+        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True,
+                      points=points, options=options)
         # lets resample to a specific frequency
         df = df.resample(freq).mean()
         # apply thold if specified

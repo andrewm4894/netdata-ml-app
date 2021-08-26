@@ -2,6 +2,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from urllib.parse import urlparse
+import re
 
 from app import app
 from apps.core.config.config import get_config
@@ -164,7 +165,7 @@ def parse_netdata_url(url):
         url_dict = {
             'host': url_parsed.hostname,
             'port': url_parsed.port,
-            'host:port': f'{url_parsed.hostname}:{url_parsed.port}',
+            'host:port': f'{url_parsed.hostname}:{url_parsed.port}' if url_parsed.port else url_parsed.hostname,
             'fragments': {frag.split('=')[0]: frag.split('=')[1] for frag in url_parsed.fragment.split(';') if '=' in frag}
         }
     else:
@@ -177,6 +178,12 @@ def parse_netdata_url(url):
         url_dict['after'] = int(int(url_dict['fragments']['after']) / 1000)
     if 'before' in url_dict['fragments']:
         url_dict['before'] = int(int(url_dict['fragments']['before']) / 1000)
+
+    child_host = re.search('/host/(.*)/', url)
+    child_host = child_host.group(1) if child_host else None
+    if child_host:
+        url_dict['child_host'] = child_host
+        url_dict['host:port'] = url_dict['host:port'] + f'/host/{child_host}'
 
     return url_dict
 

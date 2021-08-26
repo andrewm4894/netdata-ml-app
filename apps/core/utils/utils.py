@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 def process_opts(opts):
@@ -43,3 +43,9 @@ def get_ref_windows(ref_timedelta, df):
     ref_before = int(df.index.min().timestamp())
     ref_after = int((df.index.min() - ref_timedelta).timestamp())
     return ref_before, ref_after
+
+
+def log_inputs(app, host, after, before):
+    app.logger.info(f'host={host}')
+    app.logger.info(f"after={after}, {datetime.utcfromtimestamp(after).strftime('%Y-%m-%d %H:%M:%S')}")
+    app.logger.info(f"before={before}, {datetime.utcfromtimestamp(before).strftime('%Y-%m-%d %H:%M:%S')}")

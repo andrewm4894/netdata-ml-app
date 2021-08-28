@@ -6,11 +6,15 @@ from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import fpgrowth, association_rules
 
 itemsets_tooltips = {
-    'support': 'explain what support is',
-    'itemsets': 'explain what itemsets are'
+    'support': 'how often do we see these items.',
+    'itemsets': 'a collection of items.'
 }
 rules_tooltips = {
-    'antecedents': 'blah blah blah'
+    'antecedents': 'what comes first.',
+    'consequents': 'what we see next.',
+    'support': 'how often do we see this rule.',
+    'confidence': 'when we see the antecedents to often do we see the consequent.',
+    'lift': 'when we see the antecedents to often do we see the consequent, controlling for how often we see the antecedent.'
 }
 
 

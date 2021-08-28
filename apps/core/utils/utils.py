@@ -45,7 +45,9 @@ def get_ref_windows(ref_timedelta, df):
     return ref_before, ref_after
 
 
-def log_inputs(app, host, after, before):
+def log_inputs(app, host, after=None, before=None):
     app.logger.info(f'host={host}')
-    app.logger.info(f"after={after}, {datetime.utcfromtimestamp(after).strftime('%Y-%m-%d %H:%M:%S')}")
-    app.logger.info(f"before={before}, {datetime.utcfromtimestamp(before).strftime('%Y-%m-%d %H:%M:%S')}")
+    if after:
+        app.logger.info(f"after={after}, {datetime.utcfromtimestamp(after).strftime('%Y-%m-%d %H:%M:%S')}")
+    if before:
+        app.logger.info(f"before={before}, {datetime.utcfromtimestamp(before).strftime('%Y-%m-%d %H:%M:%S')}")

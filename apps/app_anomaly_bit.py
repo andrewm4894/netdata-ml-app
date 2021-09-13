@@ -24,7 +24,7 @@ from apps.help.popup_metrics_explorer import help
 
 # defaults
 app_prefix = 'ab'
-DEFAULT_OPTS = 'smooth_n=5,max_points=1000,top_n=25,max_ar=100'
+DEFAULT_OPTS = 'smooth_n=5,max_points=1000,top_n=25,max_ar=50'
 DEFAULT_CHARTS_REGEX = '\.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')

@@ -21,7 +21,7 @@ from apps.help.popup_clustering import help
 
 # defaults
 app_prefix = 'cl'
-DEFAULT_OPTS = 'k=8'
+DEFAULT_OPTS = 'k=8,smooth_n=10'
 DEFAULT_CHARTS_REGEX = 'system.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
@@ -52,7 +52,8 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-opts', 'value'),
     State(f'{app_prefix}-input-netdata-url', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='', k=20, lw=1, max_points=1000):
+def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='', k=20, lw=1, max_points=1000,
+        smooth_n='5'):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
@@ -74,6 +75,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     k = int(opts.get('k', k))
     lw = int(opts.get('lw', lw))
     max_points = int(opts.get('max_points', max_points))
+    smooth_n = int(opts.get('smooth_n', smooth_n))
     after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
     before = int(datetime.strptime(before, '%Y-%m-%dT%H:%M').timestamp())
     points = min(before - after, max_points)
@@ -93,7 +95,8 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     # only do expensive work if needed
     if recalculate:
 
-        model = Clusterer([host], charts_regex=charts_regex, after=after, before=before, n_clusters=k, points=points)
+        model = Clusterer([host], charts_regex=charts_regex, after=after, before=before, n_clusters=k, points=points,
+                          smooth_n=smooth_n)
         model.run_all()
         valid_clusters = model.df_cluster_meta[model.df_cluster_meta['valid'] == 1].index
         if len(valid_clusters) == 0:

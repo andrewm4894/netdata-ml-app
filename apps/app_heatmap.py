@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 
 import dash_core_components as dcc
 import dash_html_components as html
@@ -11,6 +12,7 @@ from sklearn.cluster import AgglomerativeClustering
 from datetime import datetime, timedelta
 
 from app import app
+from apps.core.data.core import app_get_data
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
 from apps.core.utils.inputs import (
@@ -57,6 +59,8 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
 def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='', freq='10s', w='1200', thold=None,
         norm='True', max_points=1000, options=''):
 
+    time_start = time.time()
+
     figs = []
 
     opts = process_opts(opts)
@@ -74,7 +78,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     before = netdata_url_dict.get('before', before)
     host = netdata_url_dict.get('host:port', host)
 
-    log_inputs(app, host, after, before)
+    log_inputs(app, host, after, before, points, charts_regex=charts_regex)
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='cp-fig', figure=make_empty_fig())))
@@ -83,8 +87,8 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     else:
 
         # get data
-        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True,
-                      points=points, options=options)
+        df = app_get_data(app, host=host, charts_regex=charts_regex, after=after, before=before, points=points,
+                          options=options)
         # lets resample to a specific frequency
         df = df.resample(freq).mean()
         # apply thold if specified
@@ -117,6 +121,8 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
             width=w,
             height=len(df.columns)*20)
         figs.append(html.Div(dcc.Graph(id='hm-fig', figure=fig)))
+
+    app.logger.debug(f'time to finish = {time.time() - time_start}')
 
     return figs
 

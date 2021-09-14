@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import time
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -18,7 +19,7 @@ from apps.core.utils.utils import process_opts, log_inputs
 from apps.core.plots.lines import plot_lines, plot_lines_grid
 from apps.core.plots.scatter import plot_scatters
 from apps.core.plots.hists import plot_hists
-from apps.core.data.core import normalize_df, smooth_df
+from apps.core.data.core import normalize_df, smooth_df, app_get_data
 from apps.help.popup_metrics_explorer import help
 
 # defaults
@@ -56,6 +57,9 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
 )
 def run(n_clicks, tab, host, metrics, after, before, opts='', netdata_url='',
         smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True', max_points=1000):
+
+    time_start = time.time()
+
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
     global df
@@ -89,8 +93,10 @@ def run(n_clicks, tab, host, metrics, after, before, opts='', netdata_url='',
     after = netdata_url_dict.get('after', after)
     before = netdata_url_dict.get('before', before)
     host = netdata_url_dict.get('host:port', host)
+    metrics = metrics.split(',')
+    charts = list(set([m.split('|')[0] for m in metrics]))
 
-    log_inputs(app, host, after, before)
+    log_inputs(app, host, after, before, points, charts)
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-empty', figure=make_empty_fig())))
@@ -98,9 +104,7 @@ def run(n_clicks, tab, host, metrics, after, before, opts='', netdata_url='',
 
     if recalculate:
 
-        metrics = metrics.split(',')
-        charts = list(set([m.split('|')[0] for m in metrics]))
-        df = get_data(hosts=[host], charts=charts, after=after, before=before, index_as_datetime=True, points=points)
+        df = app_get_data(app=app, host=host, charts=charts, after=after, before=before, points=points)
         df = df[metrics]
         if smooth_n >= 1:
             df = smooth_df(df, smooth_n)
@@ -136,5 +140,7 @@ def run(n_clicks, tab, host, metrics, after, before, opts='', netdata_url='',
 
     states_previous = states_current
     inputs_previous = inputs_current
+
+    app.logger.debug(f'time to finish = {time.time() - time_start}')
 
     return figs

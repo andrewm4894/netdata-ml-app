@@ -1,4 +1,7 @@
+import time
+
 import dash_table
+from netdata_pandas.data import get_data
 
 
 def normalize_df(df, method='minmax'):
@@ -32,4 +35,18 @@ def make_table(df, id, tooltip_header=None):
         tooltip_header=tooltip_header,
     )
     return table
+
+
+def app_get_data(app, host, after, before, charts=None, charts_regex=None, points=None, options=None):
+    time_get_data = time.time()
+    if charts_regex:
+        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True,
+                      points=points, options=options)
+    if charts:
+        df = get_data(hosts=[host], charts=charts, after=after, before=before, index_as_datetime=True,
+                      points=points, options=options)
+    app.logger.debug(f'df.shape = {df.shape}')
+    time_got_data = time.time()
+    app.logger.debug(f'time took to get data = {time_got_data - time_get_data}')
+    return df
 

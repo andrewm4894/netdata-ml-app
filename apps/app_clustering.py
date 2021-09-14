@@ -21,8 +21,8 @@ from apps.help.popup_clustering import help
 
 # defaults
 app_prefix = 'cl'
-DEFAULT_OPTS = 'k=8,smooth_n=10'
-DEFAULT_CHARTS_REGEX = 'system.*'
+DEFAULT_OPTS = 'k=15,max_points=100'
+DEFAULT_CHARTS_REGEX = '.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
@@ -52,8 +52,8 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
     State(f'{app_prefix}-input-opts', 'value'),
     State(f'{app_prefix}-input-netdata-url', 'value'),
 )
-def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='', k=20, lw=1, max_points=1000,
-        smooth_n='5'):
+def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='', k=20, lw=1, max_points=100,
+        smooth_n='0'):
 
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current

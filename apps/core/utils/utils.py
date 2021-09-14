@@ -45,9 +45,17 @@ def get_ref_windows(ref_timedelta, df):
     return ref_before, ref_after
 
 
-def log_inputs(app, host, after=None, before=None):
-    app.logger.info(f'host={host}')
+def log_inputs(app, host, after=None, before=None, points=None, charts=None, charts_regex=None):
+    app.logger.debug(f'host = {host}')
     if after:
-        app.logger.info(f"after={after}, {datetime.utcfromtimestamp(after).strftime('%Y-%m-%d %H:%M:%S')}")
+        app.logger.debug(f"after = {after}, {datetime.utcfromtimestamp(after).strftime('%Y-%m-%d %H:%M:%S')}")
     if before:
-        app.logger.info(f"before={before}, {datetime.utcfromtimestamp(before).strftime('%Y-%m-%d %H:%M:%S')}")
+        app.logger.debug(f"before = {before}, {datetime.utcfromtimestamp(before).strftime('%Y-%m-%d %H:%M:%S')}")
+    if before & after:
+        app.logger.debug(f"window = {datetime.utcfromtimestamp(before) - datetime.utcfromtimestamp(after)}")
+    if points:
+        app.logger.debug(f"points = {points}")
+    if charts:
+        app.logger.debug(f"charts = {charts}")
+    if charts_regex:
+        app.logger.debug(f"charts_regex = {charts_regex}")

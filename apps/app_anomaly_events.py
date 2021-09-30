@@ -14,14 +14,14 @@ from app import app
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
 from apps.core.utils.inputs import (
-    make_main_menu, make_inputs_host, make_inputs_metrics, make_inputs_after, make_inputs_before,
-    make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url, parse_netdata_url,
+    make_main_menu, make_inputs_host, make_inputs_after, make_inputs_before,
+    make_inputs_opts, make_inputs, make_figs, make_inputs_netdata_url, parse_netdata_url,
     make_inputs_charts_regex
 )
 from apps.core.utils.utils import process_opts, log_inputs
-from apps.core.plots.lines import plot_lines, plot_lines_grid
+from apps.core.plots.lines import plot_lines
 from apps.core.data.core import app_get_data
-from apps.help.popup_metrics_explorer import help
+from apps.help.popup_anomaly_events import help
 
 # defaults
 app_prefix = 'ae'
@@ -127,6 +127,10 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='', lw
             chart_dims = df_anomaly_event['chart|dim'].unique().tolist()[0:(max(ln_top_n, hm_top_n))]
             after = anomaly_event_start - (anomaly_event_len * start_buffer)
             before = anomaly_event_end + (anomaly_event_len * end_buffer)
+            after_long = after * 1000
+            before_long = before * 1000
+            anomaly_event_start_long = anomaly_event_start * 1000
+            anomaly_event_end_long = anomaly_event_end * 1000
 
             df_anomaly_event_raw = app_get_data(app, host=host, charts=charts, after=after, before=before,
                                                 points=max_points)
@@ -152,7 +156,8 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='', lw
             for chart_dim, anomaly_rate in df_anomaly_event[['chart|dim', 'anomaly_rate']].head(ln_top_n).values.tolist():
                 chart = chart_dim.split('|')[0]
                 dim = chart_dim.split('|')[1]
-                chart_title = f'{chart_dim} (ar={round(anomaly_rate*100, 2)}%)'
+                chart_url = f'http://{host}/#;after={after_long};before={before_long};chart={chart};highlight_after={anomaly_event_start_long};highlight_before={anomaly_event_end_long}'
+                chart_title = f'{chart_dim} (ar={round(anomaly_rate*100, 2)}%) (<a href="{chart_url}">netdata dashboard</a>)'
                 fig = plot_lines(
                     df_anomaly_event_data[[chart_dim]], title=f'Raw Data - {chart_title}', h=ln_h, lw=lw,
                     shade_regions=[(anomaly_event_start_ts, anomaly_event_end_ts, 'grey')], slider=False

@@ -7,10 +7,13 @@ from dash.dependencies import Input, Output, State
 from app import app
 
 help_body = """
-xxx.  
+Given a netdata url during which there are anomaly events, loop over each anomaly event, plot its heatmap and the raw metric and corresponding anomaly bit's individually.
   
-###### Lines  
-xxx.  
+##### Heatmap  
+A heatmap of top `hm_top_n` dimensions that are part of the anomaly event.   
+
+##### Lines  
+For each of the `ln_top_n` dimensions in the anomaly event plot the raw data and corresponding anomaly bit.
 """
 
 help = html.Div([

@@ -5,27 +5,25 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-from netdata_pandas.data import get_data
 from datetime import datetime, timedelta
+import pandas as pd
 
 from app import app
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
 from apps.core.utils.inputs import (
-    make_main_menu, make_inputs_host, make_inputs_metrics, make_inputs_after, make_inputs_before,
-    make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url, parse_netdata_url,
+    make_main_menu, make_inputs_host, make_inputs_after, make_inputs_before,
+    make_inputs_opts, make_inputs, make_figs, make_inputs_netdata_url, parse_netdata_url,
     make_inputs_charts_regex
 )
 from apps.core.utils.utils import process_opts, log_inputs
-from apps.core.plots.lines import plot_lines, plot_lines_grid
-from apps.core.plots.scatter import plot_scatters
-from apps.core.plots.hists import plot_hists
+from apps.core.plots.lines import plot_lines
 from apps.core.data.core import normalize_df, smooth_df, app_get_data
-from apps.help.popup_metrics_explorer import help
+from apps.help.popup_anomaly_bit import help
 
 # defaults
 app_prefix = 'ab'
-DEFAULT_OPTS = 'smooth_n=5,max_points=1000,top_n=25,max_ar=50'
+DEFAULT_OPTS = 'smooth_n=5,max_points=1000,top_n=20,max_ar=50'
 DEFAULT_CHARTS_REGEX = '\.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
@@ -54,9 +52,8 @@ layout = html.Div([logo, main_menu, help, inputs, make_figs(f'{app_prefix}-figs'
     State(f'{app_prefix}-input-opts', 'value'),
     State(f'{app_prefix}-input-netdata-url', 'value'),
 )
-def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
-        smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True', max_points=1000, top_n=25,
-        max_ar=100):
+def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='', smooth_n='0', diff='False', lw=1,
+        max_points=1000, top_n=25, max_ar=100):
 
     time_start = time.time()
 
@@ -81,11 +78,7 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
     smooth_n = int(opts.get('smooth_n', smooth_n))
     top_n = int(opts.get('top_n', top_n))
     max_ar = int(opts.get('max_ar', max_ar))
-    n_cols = int(opts.get('n_cols', n_cols))
-    h = int(opts.get('h', h))
-    w = int(opts.get('w', w))
     lw = int(opts.get('lw', lw))
-    legend = True if opts.get('legend', legend).lower() == 'true' else False
     diff = True if opts.get('diff', diff).lower() == 'true' else False
     max_points = int(opts.get('max_points', max_points))
     after = int(datetime.strptime(after, '%Y-%m-%dT%H:%M').timestamp())
@@ -94,7 +87,15 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
     netdata_url_dict = parse_netdata_url(netdata_url)
     after = netdata_url_dict.get('after', after)
     before = netdata_url_dict.get('before', before)
+    after_long = netdata_url_dict.get('after_long', None)
+    before_long = netdata_url_dict.get('before_long', None)
     host = netdata_url_dict.get('host:port', host)
+    highlight_after = netdata_url_dict.get('highlight_after', None)
+    highlight_before = netdata_url_dict.get('highlight_before', None)
+    highlight_after_long = netdata_url_dict.get('highlight_after_long', None)
+    highlight_before_long = netdata_url_dict.get('highlight_before_long', None)
+    highlight_after_ts = pd.Timestamp(datetime.utcfromtimestamp(highlight_after).strftime('%Y-%m-%d %H:%M:%S'))
+    highlight_before_ts = pd.Timestamp(datetime.utcfromtimestamp(highlight_before).strftime('%Y-%m-%d %H:%M:%S'))
 
     log_inputs(app, host, after, before, points, charts_regex=charts_regex)
 
@@ -108,7 +109,10 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
         df_bit = app_get_data(app, host=host, charts_regex=charts_regex, after=after, before=before, points=points,
                           options='anomaly-bit')
         df_bit = df_bit / 100
-        dim_rank = df_bit.mean().sort_values(ascending=False) * 100
+        if highlight_after is not None and highlight_before is not None:
+            dim_rank = df_bit[highlight_after_ts:highlight_before_ts].mean().sort_values(ascending=False) * 100
+        else:
+            dim_rank = df_bit.mean().sort_values(ascending=False) * 100
         dim_rank = dim_rank[dim_rank <= max_ar]
         dim_rank = dim_rank.head(top_n)
         if smooth_n >= 1:
@@ -119,9 +123,13 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
             df_bit = df_bit.diff()
 
     for col, ar in dim_rank.iteritems():
+        chart = col.split('|')[0]
+        chart_url = f'http://{host}/#;after={after_long};before={before_long};chart={chart};highlight_after={highlight_after_long};highlight_before={highlight_before_long}'
+        chart_title = f'{col} (anomaly rate={round(ar,2)}%) (<a href="{chart_url}">netdata dashboard</a>)'
         df_plot = normalize_df(df[[col]]).join(df_bit[[col]].add_suffix('_bit'))
         fig = plot_lines(
-            df_plot, title=f'{col} (anomaly rate={round(ar,2)}%)', h=600, lw=lw, visible_legendonly=False, hide_y_axis=True,
+            df_plot, title=chart_title, h=600, lw=lw, visible_legendonly=False, hide_y_axis=True,
+            shade_regions=[(highlight_after_ts, highlight_before_ts, 'grey')]
         )
         figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-{col}-fig-ts-plot', figure=fig)))
 

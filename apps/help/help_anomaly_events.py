@@ -10,7 +10,7 @@ from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE
 
 help_body = f"""
-## Anomaly Bit
+## Anomaly Events
 xxx.  
 #### Inputs
 - {DEFAULT_HELP_INPUTS_HOST}
@@ -30,7 +30,7 @@ xxx
 main_menu = dbc.Col(dbc.ButtonGroup(
     [
         dbc.Button('Home', href='/'),
-        dbc.Button("Back", href="/anomaly-bit"),
+        dbc.Button("Back", href="/anomaly-events"),
     ]
 ))
 layout = html.Div(

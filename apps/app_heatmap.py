@@ -26,7 +26,7 @@ from apps.help.popup_heatmap import help
 app_prefix = 'hm'
 DEFAULT_OPTS = 'freq=30s,w=1200'
 #DEFAULT_CHARTS_REGEX = 'system.*|apps.*|users.*|groups.*'
-DEFAULT_CHARTS_REGEX = 'system.*'
+DEFAULT_CHARTS_REGEX = '.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
@@ -92,14 +92,14 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
         # lets resample to a specific frequency
         df = df.resample(freq).mean()
         # apply thold if specified
-        if thold:
+        if thold == True:
             df = pd.DataFrame(
                 data=np.where(df >= float(thold), 1, 0),
                 columns=df.columns,
                 index=df.index
             )
         # lets min-max normalize our data so metrics can be compared on a heatmap
-        if norm:
+        if norm == True:
             df = (df - df.min()) / (df.max() - df.min())
         # drop na cols
         df = df.dropna(how='all', axis=1)

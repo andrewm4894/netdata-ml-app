@@ -181,6 +181,13 @@ def parse_netdata_url(url):
         url_dict['before_long'] = int(int(url_dict['fragments']['before']))
         url_dict['before'] = int(int(url_dict['fragments']['before']) / 1000)
 
+    if 'highlight_after' in url_dict['fragments']:
+        url_dict['highlight_after_long'] = int(int(url_dict['fragments']['highlight_after']))
+        url_dict['highlight_after'] = int(int(url_dict['fragments']['highlight_after']) / 1000)
+    if 'highlight_before' in url_dict['fragments']:
+        url_dict['highlight_before_long'] = int(int(url_dict['fragments']['highlight_before']))
+        url_dict['highlight_before'] = int(int(url_dict['fragments']['highlight_before']) / 1000)
+
     child_host = re.search('/host/(.*?)/', url)
     child_host = child_host.group(1) if child_host else None
     print(child_host)

@@ -27,6 +27,8 @@ Each app focuses on a particular use case:
 - __Matrix Profile Anomalies__: Use a [matrix profile](https://matrixprofile.org/#:~:text=The%20matrix%20profile%20is%20a,scalable%20and%20largely%20parameter%2Dfree.) driven approach to detect which metrics might be most anomalous.
 - __Metric Model__: Given a metric of interest, build a predictive model of that metric - how good is that model and what other metrics are important to it? This could be another way to find some evidence of what other metrics might be 'driving' some metric you are interested in.
 - __Metric Similarity__: Given a metric of interest, find the other most similar 'looking' metrics.
+- __Anomaly Bit__: Find the most anomalous dimensions given a window of interest.
+- __Anomaly Events__: Explore individual anomaly events detected by Netdata.
 
 ## Using Docker
 

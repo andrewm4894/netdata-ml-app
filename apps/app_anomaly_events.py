@@ -14,14 +14,14 @@ from app import app
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
 from apps.core.utils.inputs import (
-    make_main_menu, make_inputs_host, make_inputs_metrics, make_inputs_after, make_inputs_before,
-    make_inputs_opts, make_inputs, make_tabs, make_figs, make_inputs_netdata_url, parse_netdata_url,
+    make_main_menu, make_inputs_host, make_inputs_after, make_inputs_before,
+    make_inputs_opts, make_inputs, make_figs, make_inputs_netdata_url, parse_netdata_url,
     make_inputs_charts_regex
 )
 from apps.core.utils.utils import process_opts, log_inputs
-from apps.core.plots.lines import plot_lines, plot_lines_grid
+from apps.core.plots.lines import plot_lines
 from apps.core.data.core import app_get_data
-from apps.help.popup_metrics_explorer import help
+from apps.help.popup_anomaly_events import help
 
 # defaults
 app_prefix = 'ae'

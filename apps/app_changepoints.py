@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 
 import dash_core_components as dcc
 import dash_html_components as html
@@ -7,6 +8,7 @@ from netdata_pandas.data import get_data
 from datetime import datetime, timedelta
 
 from app import app
+from apps.core.data.core import app_get_data
 from apps.core.utils.logo import logo
 from apps.core.utils.defaults import DEFAULT_STYLE, make_empty_fig
 from apps.core.utils.inputs import (
@@ -21,8 +23,8 @@ from apps.help.popup_changepoints import help
 
 # defaults
 app_prefix = 'cp'
-DEFAULT_OPTS = 'window=100,diff_min=0.2,smooth_n=5,n_samples=100,sample_len=50,n_results=50'
-DEFAULT_CHARTS_REGEX = 'system.*|apps.*|users.*|groups.*'
+DEFAULT_OPTS = 'window=100,diff_min=0.2,smooth_n=1,n_samples=100,sample_len=50,n_results=50,max_points=500'
+DEFAULT_CHARTS_REGEX = '.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=30), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
 
@@ -55,6 +57,8 @@ layout = html.Div([logo, main_menu, help, inputs, tabs, make_figs(f'{app_prefix}
 def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='', smooth_n=5,
         n_samples=50, sample_len=50, n_results=50, window=100, diff_min=0.05, lw=1, max_points=1000):
 
+    time_start = time.time()
+
     figs = []
 
     opts = process_opts(opts)
@@ -74,7 +78,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
     before = netdata_url_dict.get('before', before)
     host = netdata_url_dict.get('host:port', host)
 
-    log_inputs(app, host, after, before)
+    log_inputs(app, host, after, before, points, charts_regex=charts_regex)
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=make_empty_fig())))
@@ -82,7 +86,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
 
     else:
 
-        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points)
+        df = app_get_data(app=app, host=host, charts_regex=charts_regex, after=after, before=before, points=points)
         df = df[[col for col in df.columns if 'uptime' not in col]]
         df = df.rolling(smooth_n).mean()
 
@@ -91,6 +95,7 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
         df_norm = df_norm.dropna(how='all', axis=0)
 
         df_results = get_changepoints(df_norm, n_samples, sample_len, diff_min, window)
+        app.logger.debug(f'df_results.shape = {df_results.shape}')
 
         for i, row in df_results.sort_values('rank').head(n_results).iterrows():
 
@@ -105,6 +110,8 @@ def run(n_clicks, tab, host, charts_regex, after, before, opts='', netdata_url='
                 slider=False, h=300, lw=lw
             )
             figs.append(html.Div(dcc.Graph(id='cp-fig-changepoint', figure=fig_changepoint)))
+
+    app.logger.debug(f'time to finish = {time.time() - time_start}')
 
     return figs
 

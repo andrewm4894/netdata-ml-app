@@ -175,8 +175,10 @@ def parse_netdata_url(url):
         }
 
     if 'after' in url_dict['fragments']:
+        url_dict['after_long'] = int(int(url_dict['fragments']['after']))
         url_dict['after'] = int(int(url_dict['fragments']['after']) / 1000)
     if 'before' in url_dict['fragments']:
+        url_dict['before_long'] = int(int(url_dict['fragments']['before']))
         url_dict['before'] = int(int(url_dict['fragments']['before']) / 1000)
 
     child_host = re.search('/host/(.*)/', url)

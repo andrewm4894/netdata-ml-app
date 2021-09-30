@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 
 import dash
 import dash_core_components as dcc
@@ -19,12 +20,12 @@ from apps.core.utils.utils import process_opts, log_inputs
 from apps.core.plots.lines import plot_lines, plot_lines_grid
 from apps.core.plots.scatter import plot_scatters
 from apps.core.plots.hists import plot_hists
-from apps.core.data.core import normalize_df, smooth_df
+from apps.core.data.core import normalize_df, smooth_df, app_get_data
 from apps.help.popup_metrics_explorer import help
 
 # defaults
 app_prefix = 'ab'
-DEFAULT_OPTS = 'smooth_n=5,max_points=1000,top_n=25,max_ar=100'
+DEFAULT_OPTS = 'smooth_n=5,max_points=1000,top_n=25,max_ar=50'
 DEFAULT_CHARTS_REGEX = '\.*'
 DEFAULT_AFTER = datetime.strftime(datetime.utcnow() - timedelta(minutes=15), '%Y-%m-%dT%H:%M')
 DEFAULT_BEFORE = datetime.strftime(datetime.utcnow() - timedelta(minutes=0), '%Y-%m-%dT%H:%M')
@@ -56,6 +57,9 @@ layout = html.Div([logo, main_menu, help, inputs, make_figs(f'{app_prefix}-figs'
 def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
         smooth_n='0', n_cols='3', h='1200', w='1200', diff='False', lw=1, legend='True', max_points=1000, top_n=25,
         max_ar=100):
+
+    time_start = time.time()
+
     # define some global variables and state change helpers
     global states_previous, states_current, inputs_previous, inputs_current
     global df
@@ -92,7 +96,7 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
     before = netdata_url_dict.get('before', before)
     host = netdata_url_dict.get('host:port', host)
 
-    log_inputs(app, host, after, before)
+    log_inputs(app, host, after, before, points, charts_regex=charts_regex)
 
     if n_clicks == 0:
         figs.append(html.Div(dcc.Graph(id=f'{app_prefix}-fig-empty', figure=make_empty_fig())))
@@ -100,8 +104,9 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
 
     if recalculate:
 
-        df = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points)
-        df_bit = get_data(hosts=[host], charts_regex=charts_regex, after=after, before=before, index_as_datetime=True, points=points, options='anomaly-bit')
+        df = app_get_data(app, host=host, charts_regex=charts_regex, after=after, before=before, points=points)
+        df_bit = app_get_data(app, host=host, charts_regex=charts_regex, after=after, before=before, points=points,
+                          options='anomaly-bit')
         df_bit = df_bit / 100
         dim_rank = df_bit.mean().sort_values(ascending=False) * 100
         dim_rank = dim_rank[dim_rank <= max_ar]
@@ -122,5 +127,7 @@ def run(n_clicks, host, charts_regex, after, before, opts='', netdata_url='',
 
     states_previous = states_current
     inputs_previous = inputs_current
+
+    app.logger.debug(f'time to finish = {time.time() - time_start}')
 
     return figs

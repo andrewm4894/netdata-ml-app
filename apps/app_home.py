@@ -63,6 +63,11 @@ card_anomaly_bit = make_card(
     '`Sort charts by Anomaly Bit.`',
     'anomaly_bit_logo.png'
 )
+card_anomaly_events = make_card(
+    dbc.Button(dcc.Markdown('`Anomaly Events`'), href='/anomaly-events', style={'height': '40px'}, outline=True),
+    '`Explore Anomaly Events.`',
+    'anomaly_events_logo.png'
+)
 card_metrics_similarity = make_card(
     dbc.Button(dcc.Markdown('`Metric Similarity`'), href='/metrics-similarity', style={'height': '40px'}, outline=True),
     '`Find most similar metrics for a metrics of interest.`',
@@ -80,6 +85,7 @@ cards = dbc.CardColumns([
     card_mp_anomalies,
     card_metrics_model,
     card_anomaly_bit,
+    card_anomaly_events,
     card_metrics_similarity
 ], style=DEFAULT_STYLE)
 

@@ -15,20 +15,20 @@ xxx.
 
 help = html.Div([
     dbc.Modal([
-        dbc.ModalHeader("Anomaly Bit"),
+        dbc.ModalHeader("Anomaly Events"),
         dbc.ModalBody(dcc.Markdown(help_body)),
         dbc.ModalFooter(
-            dbc.ButtonGroup([dbc.Button("More Help!", href="/anomaly-bit-help"), dbc.Button("Close", id="ab-help-close", className="ml-auto")])
+            dbc.ButtonGroup([dbc.Button("More Help!", href="/anomaly-events-help"), dbc.Button("Close", id="ae-help-close", className="ml-auto")])
     ),
-    ], id="ab-modal")]
+    ], id="ae-modal")]
 )
 
 
 @app.callback(
-    Output("ab-modal", "is_open"),
-    [Input("ab-help-open", "n_clicks"),
-     Input("ab-help-close", "n_clicks")],
-    [State("ab-modal", "is_open")],
+    Output("ae-modal", "is_open"),
+    [Input("ae-help-open", "n_clicks"),
+     Input("ae-help-close", "n_clicks")],
+    [State("ae-modal", "is_open")],
 )
 def toggle_help(n1, n2, is_open):
     if n1 or n2:

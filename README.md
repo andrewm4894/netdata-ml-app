@@ -90,6 +90,3 @@ Main way to define various config options is via environment variables you can d
 - `NETDATAMLAPP_HOSTS`: A string list of hosts you would like the app to pull data from. Default is a local netdata `127.0.0.1:19999`. But for example if you wanted to tell the ml app to look at our two demo netdata hosts you could do `london.my-netdata.io,newyork.my-netdata.io`.
 - `NETDATAMLAPP_SCRAPE_CHILDREN`: `yes` to also include any child netdata in the hosts list for the app, default is `no`.
 - `NETDATAMLAPP_LOG_LEVEL`: Default is `info`, set to `debug` for debug level.
-
-
-[![analytics](https://www.google-analytics.com/collect?v=1&aip=1&t=pageview&_s=1&ds=github&dr=https%3A%2F%2Fgithub.com%2Fnetdata%2Fnetdata&dl=https%3A%2F%2Fmy-netdata.io%2Fgithub%2BREAKING_CHANGES&_u=MAC~&cid=5792dfd7-8dc4-476b-af31-da2fdb9f93d2&tid=UA-64295674-3)](<>)

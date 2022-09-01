@@ -8,15 +8,17 @@ from apps.core.utils.inputs import parse_netdata_url
 from netdata_pandas.data import get_data
 import matplotlib.pyplot as plt
 
-netdata_url = 'http://34.73.38.236:19999/#menu_anomaly_detection_submenu_anomaly_detection;after=1632948226000;before=1632950039000;theme=slate;utc=Europe/Dublin'
-anomaly_event_start_buffer = 5
-anomaly_event_end_buffer = 1
-top_n = 5
+netdata_url = 'http://34.148.96.144:19999/#after=1662038916000;before=1662039892000;=undefined;highlight_after=1662039386219;highlight_before=1662039516615;theme=slate;utc=Europe%2FLondon'
 
 url_dict = parse_netdata_url(netdata_url)
 host = url_dict['host:port']
 after = url_dict['fragments']['after']
 before = url_dict['fragments']['before']
+
+print(after)
+print(before)
+
+#%%
 
 url_anomaly_events = f"http://{host}/api/v1/anomaly_events?after={after}&before={before}"
 anomaly_events = requests.get(url_anomaly_events).json()

@@ -2,7 +2,7 @@ werkzeug==2.0.0
 gunicorn==20.1.0
 flask==2.0.1
 python-dotenv==0.15.0
-dash==1.18.1
+dash==2.1.0
 dash-bootstrap-components==0.10.7
 numpy==1.20.0
 netdata-pandas==0.0.39
@@ -13,3 +13,4 @@ mlxtend==0.18.0
 ruptures==1.1.2
 stumpy==1.8.0
 pyod==0.8.7
+dash-cytoscape==0.2.0

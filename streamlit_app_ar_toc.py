@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 import re
 
 
+
 def parse_netdata_url(url):
     if url.startswith('http'):
         url_parsed = urlparse(url)

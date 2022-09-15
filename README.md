@@ -12,6 +12,10 @@ https://netdata-ml-app.herokuapp.com/
 
 https://netdata-ml-app-develop.herokuapp.com/
 
+### Streamlit Apps
+
+- __AR TOC__: `streamlit_app_ar_toc.py` - Anomaly Rates in netdata menu - try it [here](https://andrewm4894-netdata-ml-app-streamlit-app-ar-toc-5b9d7r.streamlitapp.com/).
+
 ### Apps
 
 Each app focuses on a particular use case: 

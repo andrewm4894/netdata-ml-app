@@ -1,14 +1,9 @@
 
 import requests
-import pandas as pd
-import numpy as np
-from netdata_pandas.data import get_data
-import matplotlib.pyplot as plt
 import streamlit as st
 from collections import OrderedDict
 from urllib.parse import urlparse
 import re
-
 
 
 def parse_netdata_url(url):
@@ -71,13 +66,32 @@ print(before)
 url_weights = f"http://{host}/api/v1/weights?after={after}&before={before}&options=raw"
 print(url_weights)
 
+url_charts = f"http://{host}/api/v1/charts"
+charts_data = requests.get(url_charts).json()['charts']
+data_chart_order = dict()
+for chart in charts_data:
+    data_chart_order[chart] = dict()
+    data_chart_order[chart]['priority'] = charts_data[chart]['priority']
+    data_chart_order[chart]['context'] = charts_data[chart]['context']
+print(data_chart_order)
+
+#%%
+
+import pandas as pd
+
+df_chart_order = pd.DataFrame.from_dict(data_chart_order).transpose().reset_index()
+df_chart_order.columns = ['chart', 'priority', 'context']
+df_chart_order = df_chart_order[['context', 'chart', 'priority']].sort_values('priority')
+
+#%%
+
 weights_data = requests.get(url_weights).json()
 
 data = OrderedDict()
-for context in weights_data['contexts']:
+for context in df_chart_order['context'].unique():
     context_key = f"{context}: {round(weights_data['contexts'][context]['weight'],2)}"
     data[context_key] = dict()
-    for chart in weights_data['contexts'][context]['charts']:
+    for chart in df_chart_order[df_chart_order['context'] == context]['chart'].unique():
         chart_key = f"{chart}: {round(weights_data['contexts'][context]['charts'][chart]['weight'],2)}"
         data[context_key][chart_key] = dict()
         for dim in weights_data['contexts'][context]['charts'][chart]['dimensions']:

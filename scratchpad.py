@@ -9,7 +9,7 @@ from apps.core.utils.inputs import parse_netdata_url
 from netdata_pandas.data import get_data
 import matplotlib.pyplot as plt
 
-netdata_url = 'http://34.139.5.223:19999/#after=1663148557000;before=1663151210000;menu_system;theme=slate;utc=Europe%2FLondon'
+netdata_url = 'http://34.139.5.223:19999/#after=1663247360000;before=1663248336000;highlight_after=1663248091134;highlight_before=1663248151591;theme=slate;utc=Europe%2FLondon'
 
 url_dict = parse_netdata_url(netdata_url)
 host = url_dict['host:port']

@@ -13,4 +13,4 @@ mlxtend==0.18.0
 ruptures==1.1.2
 stumpy==1.8.0
 pyod==0.8.7
-dash-cytoscape==0.2.0
+streamlit==1.12.2

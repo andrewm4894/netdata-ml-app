@@ -82,21 +82,36 @@ import pandas as pd
 df_chart_order = pd.DataFrame.from_dict(data_chart_order).transpose().reset_index()
 df_chart_order.columns = ['chart', 'priority', 'context']
 df_chart_order = df_chart_order[['context', 'chart', 'priority']].sort_values('priority')
+df_chart_order['menu'] = df_chart_order['context'].str.split('.').str[0]
 
 #%%
 
 weights_data = requests.get(url_weights).json()
 
+#%%
+
+df_menu_weights = pd.DataFrame(
+    [(context.split('.')[0], weights_data['contexts'][context]['weight']) for context in weights_data['contexts']],
+    columns=['menu', 'weight']
+)
+menu_weights_dict = df_menu_weights.groupby('menu').mean().to_dict(orient='index')
+
+#%%
+
 data = OrderedDict()
-for context in df_chart_order['context'].unique():
-    context_key = f"{context}: {round(weights_data['contexts'][context]['weight'],2)}"
-    data[context_key] = dict()
-    for chart in df_chart_order[df_chart_order['context'] == context]['chart'].unique():
-        chart_key = f"{chart}: {round(weights_data['contexts'][context]['charts'][chart]['weight'],2)}"
-        data[context_key][chart_key] = dict()
-        for dim in weights_data['contexts'][context]['charts'][chart]['dimensions']:
-            dim_key = dim
-            data[context_key][chart_key][dim_key] = round(weights_data['contexts'][context]['charts'][chart]['dimensions'][dim], 2)
+for menu in df_chart_order['menu'].unique():
+    menu_key = f"{menu}: {round(menu_weights_dict[menu]['weight']*1,2)}%"
+    data[menu_key] = dict()
+    for context in df_chart_order['context'].unique():
+        if context.startswith(menu):
+            context_key = f"{context}: {round(weights_data['contexts'][context]['weight']*1,2)}%"
+            data[menu_key][context_key] = dict()
+            for chart in df_chart_order[df_chart_order['context'] == context]['chart'].unique():
+                chart_key = f"{chart}: {round(weights_data['contexts'][context]['charts'][chart]['weight'],2)}%"
+                data[menu_key][context_key][chart_key] = dict()
+                for dim in weights_data['contexts'][context]['charts'][chart]['dimensions']:
+                    dim_key = dim
+                    data[menu_key][context_key][chart_key][dim_key] = f"{round(weights_data['contexts'][context]['charts'][chart]['dimensions'][dim]*1, 2)}%"
 
 st.json(
     data,

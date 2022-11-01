@@ -96,7 +96,7 @@ for col in df_highlight.columns:
     X_highlight = df_highlight[[col]].diff().dropna()
     pca = PCA()
     pca.fit(X_baseline)
-    X_highlight_reconstructed = pca.inverse_transform(X_highlight)
+    X_highlight_reconstructed = pca.inverse_transform(pca.transform(X_highlight))
     reconstruction_error = 1 - r2_score(X_highlight, X_highlight_reconstructed)
     reconstruction_errors.append([col, reconstruction_error])
 

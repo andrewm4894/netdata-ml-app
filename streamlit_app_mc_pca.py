@@ -100,19 +100,16 @@ for col in df_highlight.columns:
     X_highlight = pd.concat([df_highlight[col].diff().shift(n) for n in range(0, n_lag + 1)], axis=1).dropna().values
     pca = PCA(n_components=n_components)
     pca.fit(X_baseline)
-    # X_baseline_transformed = pca.inverse_transform(pca.transform(X_baseline))
-    X_highlight_transformed = pca.inverse_transform(pca.transform(X_highlight))
+    X_highlight_reconstructed = pca.inverse_transform(pca.transform(X_highlight))
     cosine_similarity = 1 - spatial.distance.cosine(
-        X_highlight_transformed.reshape(X_highlight_transformed.size),
+        X_highlight_reconstructed.reshape(X_highlight_reconstructed.size),
         X_highlight.reshape(X_highlight.size)
     )
-    #reconstruction_error = np.sqrt(np.sum((X_highlight - X_highlight_transformed) ** 2, axis=1).mean())
     reconstruction_similarity.append([col, cosine_similarity])
 
 df_reconstruction_similarity = pd.DataFrame(reconstruction_similarity, columns=['dim', 'cosine_similarity'])
 df_reconstruction_similarity = df_reconstruction_similarity.sort_values('cosine_similarity', ascending=True)
 df_reconstruction_similarity = df_reconstruction_similarity.set_index('dim')
-#print(df_reconstruction_errors)
 
 #%%
 
@@ -120,14 +117,9 @@ df_reconstruction_similarity = df_reconstruction_similarity.set_index('dim')
 
 for i, row in df_reconstruction_similarity.iterrows():
     msg = f"{i}, {row['cosine_similarity']}"
-    print(msg)
+    #print(msg)
     st.text(msg)
     st.line_chart(df[[i]])
-    #fig = plot_lines(
-    #    df[[i]], title=f"{i} ({row['reconstruction_error']})", visible_legendonly=False, hide_y_axis=True,
-    #    shade_regions=[(highlight_after_ts, highlight_before_ts, 'grey')]
-    #)
-    #st.plotly_chart(fig, use_container_width=True)
 
 print('done')
 

@@ -1,13 +1,13 @@
 
 import pandas as pd
+import numpy as np
 import streamlit as st
 from urllib.parse import urlparse
 import re
 from netdata_pandas.data import get_data
 from sklearn.decomposition import PCA
-from sklearn.metrics import r2_score
 from datetime import datetime
-from apps.core.plots.lines import plot_lines
+#from apps.core.plots.lines import plot_lines
 
 
 #%%
@@ -65,6 +65,8 @@ window_length = highlight_before - highlight_after
 baseline_after = highlight_after - (window_length * 4)
 baseline_before = highlight_after
 
+n_lag = 5
+
 highlight_after_ts = pd.Timestamp(datetime.utcfromtimestamp(highlight_after).strftime('%Y-%m-%d %H:%M:%S'))
 highlight_before_ts = pd.Timestamp(datetime.utcfromtimestamp(highlight_before).strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -77,7 +79,7 @@ print(highlight_before)
 
 #%%
 
-df = get_data(hosts=host, after=baseline_after, before=highlight_before, charts_regex='apps.cpu*').ffill().fillna(0)
+df = get_data(hosts=host, after=baseline_after, before=highlight_before, charts_regex='system.*').ffill().fillna(0)
 print(df.shape)
 
 #%%
@@ -92,12 +94,13 @@ print(df_highlight.shape)
 
 reconstruction_errors = []
 for col in df_highlight.columns:
-    X_baseline = df_baseline[[col]].diff().dropna()
-    X_highlight = df_highlight[[col]].diff().dropna()
-    pca = PCA()
+    X_baseline = pd.concat([df_baseline[col].diff().shift(n) for n in range(0, n_lag + 1)], axis=1).dropna().values
+    X_highlight = pd.concat([df_highlight[col].diff().shift(n) for n in range(0, n_lag + 1)], axis=1).dropna().values
+    pca = PCA(n_components=1)
     pca.fit(X_baseline)
-    X_highlight_reconstructed = pca.inverse_transform(pca.transform(X_highlight))
-    reconstruction_error = 1 - r2_score(X_highlight, X_highlight_reconstructed)
+    # X_baseline_transformed = pca.inverse_transform(pca.transform(X_baseline))
+    X_highlight_transformed = pca.inverse_transform(pca.transform(X_highlight))
+    reconstruction_error = np.sqrt(np.sum((X_highlight - X_highlight_transformed) ** 2, axis=1).mean())
     reconstruction_errors.append([col, reconstruction_error])
 
 df_reconstruction_errors = pd.DataFrame(reconstruction_errors, columns=['dim', 'reconstruction_error'])
@@ -110,10 +113,12 @@ df_reconstruction_errors = df_reconstruction_errors.set_index('dim')
 #%%
 
 for i, row in df_reconstruction_errors.iterrows():
-    fig = plot_lines(
-        df[[i]], title=i, visible_legendonly=False, hide_y_axis=True,
-        shade_regions=[(highlight_after_ts, highlight_before_ts, 'grey')]
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    st.text(f"{i}, {row['reconstruction_error']}")
+    st.line_chart(df[[i]])
+    #fig = plot_lines(
+    #    df[[i]], title=f"{i} ({row['reconstruction_error']})", visible_legendonly=False, hide_y_axis=True,
+    #    shade_regions=[(highlight_after_ts, highlight_before_ts, 'grey')]
+    #)
+    #st.plotly_chart(fig, use_container_width=True)
 
 #%%

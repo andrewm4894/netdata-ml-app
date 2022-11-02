@@ -1,6 +1,5 @@
 
 import pandas as pd
-import numpy as np
 import streamlit as st
 from urllib.parse import urlparse
 import re
@@ -8,7 +7,6 @@ from netdata_pandas.data import get_data
 from sklearn.decomposition import PCA
 from scipy import spatial
 from datetime import datetime
-#from apps.core.plots.lines import plot_lines
 
 
 #%%
@@ -95,18 +93,34 @@ print(df_highlight.shape)
 #%%
 
 reconstruction_similarity = []
+
+# loop over each metric
 for col in df_highlight.columns:
+
+    # preprocess baseline and highlight data
+    # take differences
+    # add lags
     X_baseline = pd.concat([df_baseline[col].diff().shift(n) for n in range(0, n_lag + 1)], axis=1).dropna().values
     X_highlight = pd.concat([df_highlight[col].diff().shift(n) for n in range(0, n_lag + 1)], axis=1).dropna().values
+
+    # create pca
     pca = PCA(n_components=n_components)
+
+    # fit pca based on preprocessed baseline data
     pca.fit(X_baseline)
+
+    # use fitted pca to reconstruct the preprocessed highlight data
     X_highlight_reconstructed = pca.inverse_transform(pca.transform(X_highlight))
+
+    # calculate the cosine similarity between the preprocessed highlight data and its reconstruction using the PCA fitted above.
+    # metrics that have changed the most between the baseline and highlight window will have a lower quality reconstruction and so lower cosine similarity value
     cosine_similarity = 1 - spatial.distance.cosine(
         X_highlight_reconstructed.reshape(X_highlight_reconstructed.size),
         X_highlight.reshape(X_highlight.size)
     )
     reconstruction_similarity.append([col, cosine_similarity])
 
+# sort to have lowest cosine similarity dims as those that look like they have changed the most.
 df_reconstruction_similarity = pd.DataFrame(reconstruction_similarity, columns=['dim', 'cosine_similarity'])
 df_reconstruction_similarity = df_reconstruction_similarity.sort_values('cosine_similarity', ascending=True)
 df_reconstruction_similarity = df_reconstruction_similarity.set_index('dim')
@@ -115,6 +129,7 @@ df_reconstruction_similarity = df_reconstruction_similarity.set_index('dim')
 
 #%%
 
+# plot the dims that have changed the most first
 for i, row in df_reconstruction_similarity.iterrows():
     msg = f"{i}, {row['cosine_similarity']}"
     #print(msg)

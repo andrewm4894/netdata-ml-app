@@ -7,7 +7,7 @@ from netdata_pandas.data import get_data
 from sklearn.decomposition import PCA
 from scipy import spatial
 from datetime import datetime
-
+from sklearn.preprocessing import StandardScaler
 
 #%%
 
@@ -55,7 +55,7 @@ netdata_url = st.text_input('netdata_agent_dashboard_url', value=DEFAULT_URL)
 charts_regex = st.text_input('charts_regex', value='system.*')
 n_lag = int(st.number_input('n_lag', value=5))
 n_components = int(st.number_input('n_components', value=1))
-
+standardize = st.checkbox('standardize', value=False)
 
 url_dict = parse_netdata_url(netdata_url)
 host = url_dict['host:port']
@@ -102,6 +102,12 @@ for col in df_highlight.columns:
     # add lags
     X_baseline = pd.concat([df_baseline[col].diff().shift(n) for n in range(0, n_lag + 1)], axis=1).dropna().values
     X_highlight = pd.concat([df_highlight[col].diff().shift(n) for n in range(0, n_lag + 1)], axis=1).dropna().values
+
+    # standardize
+    if standardize == True:
+        scaler = StandardScaler().fit(X_baseline)
+        X_baseline = scaler.transform(X_baseline)
+        X_highlight = scaler.transform(X_highlight)
 
     # create pca
     pca = PCA(n_components=n_components)

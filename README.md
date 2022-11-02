@@ -15,7 +15,7 @@ https://netdata-ml-app-develop.herokuapp.com/
 ### Streamlit Apps
 
 - __AR TOC__: `streamlit_app_ar_toc.py` - Anomaly Rates in netdata menu - try it [here](https://andrewm4894-netdata-ml-app-streamlit-app-ar-toc-5b9d7r.streamlitapp.com/).
-- __MC PCA__: `streamlit_app_mc_pca.py` - PCA based Metric Correlations - try it [here](https://andrewm4894-netdata-ml-app-streamlit-app-mc-pca-5b9d7r.streamlitapp.com/).
+- __MC PCA__: `streamlit_app_mc_pca.py` - PCA based Metric Correlations - try it [here](https://andrewm4894-netdata-ml-app-streamlit-app-mc-pca-vxgz0t.streamlitapp.com/).
 
 ### Apps
 
